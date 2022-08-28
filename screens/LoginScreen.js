@@ -1,12 +1,26 @@
-import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  ImageBackground,
+  KeyboardAvoidingView,
+} from "react-native";
 import { Image, ThemeProvider } from "@rneui/themed";
-import { Button } from "@rneui/base";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import useAuth from "../hooks/useAuth";
-import { Input, Icon, Stack, Center, NativeBaseProvider } from "native-base";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+  Input,
+  Icon,
+  Stack,
+  Button,
+  Center,
+  NativeBaseProvider,
+  Flex,
+  Text,
+} from "native-base";
+import { MaterialIcons, AntDesign } from "@expo/vector-icons";
+import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +28,9 @@ const LoginScreen = () => {
   const [error, setError] = useState("");
   const navigation = useNavigation();
   const { signIn, loading } = useAuth();
+  let [fontLoaded] = useFonts({
+    Lobster_400Regular,
+  });
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -41,12 +58,13 @@ const LoginScreen = () => {
             md: "25%",
           }}
           onChangeText={(text) => setEmail(text)}
+          style={styles.input}
           InputLeftElement={
             <Icon
               as={<MaterialIcons name="person" />}
               size={5}
               ml="2"
-              color="muted.400"
+              color="white"
             />
           }
           placeholder="Email"
@@ -56,6 +74,7 @@ const LoginScreen = () => {
             base: "75%",
             md: "25%",
           }}
+          style={styles.input}
           onChangeText={(text) => setPassword(text)}
           type={show ? "text" : "password"}
           InputRightElement={
@@ -65,7 +84,7 @@ const LoginScreen = () => {
               }
               size={5}
               mr="2"
-              color="muted.400"
+              color="white"
               onPress={() => setShow(!show)}
             />
           }
@@ -75,54 +94,97 @@ const LoginScreen = () => {
     );
   };
 
-  return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
-      <Image
-        source={{
-          uri: "https://cdn2.iconfinder.com/data/icons/social-media-icons-23/800/tinder-512.png",
-        }}
-        style={styles.image}
-      />
-      <EmailAndPasswordInput />
-      <Button
-        raised
-        containerStyle={styles.button}
-        color="#FE4C6A"
-        onPress={logIn}
-        title="Sign In"
-      />
-      <Button
-        containerStyle={styles.button}
-        type="link"
-        onPress={() => navigation.navigate("Register")}
-        title="Register"
-      />
-    </KeyboardAvoidingView>
-  );
+  if (!fontLoaded) {
+    return null;
+  } else {
+    return (
+      <KeyboardAvoidingView style={styles.container}>
+        <ImageBackground
+          source={require("../assets/bg1.png")}
+          resizeMode="cover"
+          style={styles.container}
+        >
+          <AntDesign
+            name="leftcircleo"
+            size={50}
+            color="white"
+            style={styles.floatButton}
+            onPress={() => navigation.navigate("StartScreen")}
+          />
+          <Text
+            fontSize="4xl"
+            color="white"
+            style={{ fontFamily: "Lobster_400Regular" }}
+            marginTop={20}
+          >
+            Welcome back!
+          </Text>
+          <Text fontSize="sm" color="white" marginBottom={30}>
+            Login to your account
+          </Text>
+          <EmailAndPasswordInput />
+          <Button onPress={logIn} style={styles.button}>
+            <Text
+              fontSize="md"
+              color="white"
+              style={{ fontFamily: "Lobster_400Regular" }}
+            >
+              Sign In
+            </Text>
+          </Button>
+          <Flex direction="row" marginTop={3}>
+            <Text fontSize="sm" color="white">
+              Don't have an account?{" "}
+            </Text>
+            <Text
+              fontSize="sm"
+              onPress={() => navigation.navigate("Register")}
+              style={styles.register}
+            >
+              Sign up
+            </Text>
+          </Flex>
+          {/* <Button onPress={() => navigation.navigate("Register")} rounded={"md"}>
+        Register
+      </Button> */}
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    );
+  }
 };
 
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  image: {
-    width: 120,
-    height: 120,
-    marginBottom: 50,
-  },
   container: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: 10,
-    backgroundColor: "white",
+    backgroundColor: "#3a5093",
+    width: "100%",
+    position: "relative",
   },
   button: {
-    width: 200,
-    marginTop: 10,
-    borderRadius: 10,
+    width: 300,
+    marginTop: 100,
+    borderRadius: 40,
+    backgroundColor: "#4F67D8",
   },
-
+  input: {
+    backgroundColor: "transparent",
+    color: "white",
+  },
   inputContainer: {
     width: 300,
+  },
+  register: {
+    color: "white",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+  },
+  floatButton: {
+    position: "absolute",
+    top: 30,
+    left: 15,
   },
 });
