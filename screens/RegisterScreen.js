@@ -30,6 +30,7 @@ const RegisterScreen = () => {
   const [error, setError] = useState("");
   const { signUp } = useAuth();
   const navigation = useNavigation();
+  const [show, setShow] = useState(false);
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
   });
@@ -42,61 +43,6 @@ const RegisterScreen = () => {
     } catch (err) {
       setError(err.message);
     }
-  };
-
-  const RegisterForm = () => {
-    const [show, setShow] = useState(false);
-    return (
-      <Stack space={4} w="100%" alignItems="center">
-        <Input
-          w={{
-            base: "75%",
-            md: "25%",
-          }}
-          onChangeText={(text) => setName(text)}
-          style={styles.input}
-          placeholder="Display Name"
-        />
-        <Input
-          w={{
-            base: "75%",
-            md: "25%",
-          }}
-          onChangeText={(text) => setEmail(text)}
-          style={styles.input}
-          InputLeftElement={
-            <Icon
-              as={<MaterialIcons name="person" />}
-              size={5}
-              ml="2"
-              color="white"
-            />
-          }
-          placeholder="Email"
-        />
-        <Input
-          w={{
-            base: "75%",
-            md: "25%",
-          }}
-          style={styles.input}
-          onChangeText={(text) => setPassword(text)}
-          type={show ? "text" : "password"}
-          InputRightElement={
-            <Icon
-              as={
-                <MaterialIcons name={show ? "visibility" : "visibility-off"} />
-              }
-              size={5}
-              mr="2"
-              color="white"
-              onPress={() => setShow(!show)}
-            />
-          }
-          placeholder="Password"
-        />
-      </Stack>
-    );
   };
 
   useLayoutEffect(() => {
@@ -133,7 +79,60 @@ const RegisterScreen = () => {
           <Text fontSize="sm" color="white" marginBottom={30}>
             Create your account
           </Text>
-          <RegisterForm />
+          <Stack space={4} w="100%" alignItems="center">
+            <Input
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              value={name}
+              onChangeText={(text) => setName(text)}
+              style={styles.input}
+              placeholder="Display Name"
+            />
+            <Input
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              style={styles.input}
+              InputLeftElement={
+                <Icon
+                  as={<MaterialIcons name="person" />}
+                  size={5}
+                  ml="2"
+                  color="white"
+                />
+              }
+              placeholder="Email"
+            />
+            <Input
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              value={password}
+              style={styles.input}
+              onChangeText={(text) => setPassword(text)}
+              type={show ? "text" : "password"}
+              InputRightElement={
+                <Icon
+                  as={
+                    <MaterialIcons
+                      name={show ? "visibility" : "visibility-off"}
+                    />
+                  }
+                  size={5}
+                  mr="2"
+                  color="white"
+                  onPress={() => setShow(!show)}
+                />
+              }
+              placeholder="Password"
+            />
+          </Stack>
           <Text fontSize="sm" color="white" width={300} marginTop={2}>
             By registering, you are agreeing to our Terms of Use and Privacy
             Policy

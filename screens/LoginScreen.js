@@ -28,6 +28,8 @@ const LoginScreen = () => {
   const [error, setError] = useState("");
   const navigation = useNavigation();
   const { signIn, loading } = useAuth();
+  const [show, setShow] = useState(false);
+
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
   });
@@ -46,52 +48,6 @@ const LoginScreen = () => {
       setError(err.message);
       alert(err);
     }
-  };
-
-  const EmailAndPasswordInput = () => {
-    const [show, setShow] = useState(false);
-    return (
-      <Stack space={4} w="100%" alignItems="center">
-        <Input
-          w={{
-            base: "75%",
-            md: "25%",
-          }}
-          onChangeText={(text) => setEmail(text)}
-          style={styles.input}
-          InputLeftElement={
-            <Icon
-              as={<MaterialIcons name="person" />}
-              size={5}
-              ml="2"
-              color="white"
-            />
-          }
-          placeholder="Email"
-        />
-        <Input
-          w={{
-            base: "75%",
-            md: "25%",
-          }}
-          style={styles.input}
-          onChangeText={(text) => setPassword(text)}
-          type={show ? "text" : "password"}
-          InputRightElement={
-            <Icon
-              as={
-                <MaterialIcons name={show ? "visibility" : "visibility-off"} />
-              }
-              size={5}
-              mr="2"
-              color="white"
-              onPress={() => setShow(!show)}
-            />
-          }
-          placeholder="Password"
-        />
-      </Stack>
-    );
   };
 
   if (!fontLoaded) {
@@ -122,7 +78,50 @@ const LoginScreen = () => {
           <Text fontSize="sm" color="white" marginBottom={30}>
             Login to your account
           </Text>
-          <EmailAndPasswordInput />
+          <Stack space={4} w="100%" alignItems="center">
+            <Input
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              style={styles.input}
+              InputLeftElement={
+                <Icon
+                  as={<MaterialIcons name="person" />}
+                  size={5}
+                  ml="2"
+                  color="white"
+                />
+              }
+              placeholder="Email"
+            />
+            <Input
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              style={styles.input}
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+              type={show ? "text" : "password"}
+              InputRightElement={
+                <Icon
+                  as={
+                    <MaterialIcons
+                      name={show ? "visibility" : "visibility-off"}
+                    />
+                  }
+                  size={5}
+                  mr="2"
+                  color="white"
+                  onPress={() => setShow(!show)}
+                />
+              }
+              placeholder="Password"
+            />
+          </Stack>
           <Button onPress={logIn} style={styles.button}>
             <Text
               fontSize="md"
