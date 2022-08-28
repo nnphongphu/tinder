@@ -1,10 +1,12 @@
-import { StyleSheet, View, KeyboardAvoidingView } from 'react-native'
-import { Input, Image, ThemeProvider } from '@rneui/themed'
-import { Button } from '@rneui/base'
-import { useEffect, useLayoutEffect, useState } from 'react'
-import { auth } from '../firebaseConfig'
-import { useNavigation } from '@react-navigation/native';
-import useAuth from '../hooks/useAuth';
+import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
+import { Image, ThemeProvider } from "@rneui/themed";
+import { Button } from "@rneui/base";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { auth } from "../firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import useAuth from "../hooks/useAuth";
+import { Input, Icon, Stack, Center, NativeBaseProvider } from "native-base";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -15,9 +17,9 @@ const LoginScreen = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: false
+      headerShown: false,
     });
-  }, [])
+  }, []);
 
   const logIn = async () => {
     try {
@@ -27,58 +29,100 @@ const LoginScreen = () => {
       setError(err.message);
       alert(err);
     }
-  }
+  };
+
+  const EmailAndPasswordInput = () => {
+    const [show, setShow] = useState(false);
+    return (
+      <Stack space={4} w="100%" alignItems="center">
+        <Input
+          w={{
+            base: "75%",
+            md: "25%",
+          }}
+          onChangeText={(text) => setEmail(text)}
+          InputLeftElement={
+            <Icon
+              as={<MaterialIcons name="person" />}
+              size={5}
+              ml="2"
+              color="muted.400"
+            />
+          }
+          placeholder="Email"
+        />
+        <Input
+          w={{
+            base: "75%",
+            md: "25%",
+          }}
+          onChangeText={(text) => setPassword(text)}
+          type={show ? "text" : "password"}
+          InputRightElement={
+            <Icon
+              as={
+                <MaterialIcons name={show ? "visibility" : "visibility-off"} />
+              }
+              size={5}
+              mr="2"
+              color="muted.400"
+              onPress={() => setShow(!show)}
+            />
+          }
+          placeholder="Password"
+        />
+      </Stack>
+    );
+  };
 
   return (
-    <KeyboardAvoidingView behavior='padding' style={styles.container}>
-      <Image 
-        source={{uri: 'https://cdn2.iconfinder.com/data/icons/social-media-icons-23/800/tinder-512.png'}} 
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <Image
+        source={{
+          uri: "https://cdn2.iconfinder.com/data/icons/social-media-icons-23/800/tinder-512.png",
+        }}
         style={styles.image}
       />
-      <View style={styles.inputContainer}>
-        <Input autoFocus
-          placeholder='Email'
-          type="email"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-        />
-        <Input secureTextEntry
-          placeholder='Password' 
-          type="password"  
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-          onSubmitEditing={signIn}
-        />
-      </View>
-      <Button raised containerStyle={styles.button} color="#FE4C6A" onPress={logIn} title="Sign In" />
-      <Button containerStyle={styles.button} type="link" onPress={() => navigation.navigate('Register')} title="Register" />
-      <View style={{ height: 150}} />
+      <EmailAndPasswordInput />
+      <Button
+        raised
+        containerStyle={styles.button}
+        color="#FE4C6A"
+        onPress={logIn}
+        title="Sign In"
+      />
+      <Button
+        containerStyle={styles.button}
+        type="link"
+        onPress={() => navigation.navigate("Register")}
+        title="Register"
+      />
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
-export default LoginScreen
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   image: {
-    width: 120, 
+    width: 120,
     height: 120,
-    marginBottom: 50
+    marginBottom: 50,
   },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 10,
-    backgroundColor: 'white'
+    backgroundColor: "white",
   },
   button: {
     width: 200,
     marginTop: 10,
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   inputContainer: {
-    width: 300
-  }
-})
+    width: 300,
+  },
+});
