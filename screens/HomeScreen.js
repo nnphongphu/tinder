@@ -21,8 +21,36 @@ import firebase from "firebase/compat/app";
 import { ThemeConsumer } from "@rneui/themed";
 import { Platform } from "react-native";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const Tab = createMaterialBottomTabNavigator(); 
 
 const HomeScreen = () => {
+  function Feed() {
+    return (
+      <View style={{ flex: 2, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Feed!</Text>
+      </View>
+    );
+  }
+  
+  function Profile() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
+            </TouchableOpacity>
+      </View>
+    );
+  }
+  
+  function Notifications() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Notifications!</Text>
+      </View>
+    );
+  }
   const [chats, setChats] = useState([]);
   const [passes, setPasses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,11 +100,47 @@ const HomeScreen = () => {
   if (!fontLoaded) {
     return null;
   } else {
-    return <KeyboardAvoidingView style={tw`flex-1`}>
-      <AppBar />
- 
-      
-    </KeyboardAvoidingView>}
+    return (
+      <>
+    <Tab.Navigator
+        initialRouteName="Feed"
+        activeColor="#e91e63"
+        barStyle={{ backgroundColor: "#4F67D8"}}
+      >
+        <Tab.Screen
+          name="Feed"
+          component={Feed}
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: () => (
+              <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
+                <Image style={tw`h-10 w-10`} source={require("../assets/logo.png")} />
+              </TouchableOpacity>
+            ),
+          }} />
+        <Tab.Screen
+          name="Notifications"
+          component={Notifications}
+          options={{
+            tabBarLabel: 'Updates',
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="bell" color={color} size={26} />
+            ),
+          }} />
+        <Tab.Screen
+          name="Profile"
+          component={Profile}
+          options={{
+            tabBarLabel: 'Profile',
+            tabBarIcon: ({ color }) => (
+              <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
+            <MaterialCommunityIcons name="account" color={color} size={26} />
+              </TouchableOpacity>
+              
+            ),
+          }} />
+      </Tab.Navigator></>
+);}
 
   // useLayoutEffect(
   //   () =>
