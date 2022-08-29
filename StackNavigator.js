@@ -14,6 +14,7 @@ import MessageScreen from "./screens/MessageScreen";
 import StartScreen from "./screens/StartScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import AccountScreen from "./screens/AccountScreen";
 
 const Stack = createNativeStackNavigator();
 const globalScreenOptions = {
@@ -47,7 +48,12 @@ export default function StackNavigator() {
       ) : (
         <>
           <Stack.Group>
-            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="Account" component={AccountScreen} />
+            <Stack.Screen
+              name="Profile"
+              initialParams={{ uid: user.uid }}
+              component={ProfileScreen}
+            />
             <Stack.Screen name="AddChat" component={AddChatScreen} />
             <Stack.Screen
               name="Chat"
@@ -74,6 +80,7 @@ export default function StackNavigator() {
                 },
               }}
               name="Home"
+              initialParams={{ initialTab: "Feed" }}
               component={HomeScreen}
             />
           </Stack.Group>

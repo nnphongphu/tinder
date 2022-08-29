@@ -182,13 +182,14 @@ const ModalScreen = () => {
           }}
         >
           {!isFirstTimer && (
-            <AntDesign
-              name="leftcircleo"
-              size={50}
-              color="white"
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Home", { initialTab: "Account" })
+              }
               style={styles.floatButtonBack}
-              onPress={() => navigation.navigate("Home")}
-            />
+            >
+              <AntDesign name="leftcircleo" size={50} color="white" />
+            </TouchableOpacity>
           )}
           <Text
             fontSize="4xl"

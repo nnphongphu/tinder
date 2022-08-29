@@ -187,13 +187,12 @@ const ProfileScreen = ({ route }) => {
   } else {
     return (
       <ScrollView contentContainerStyle={styles.view} backgroundColor={"white"}>
-        <AntDesign
-          name="leftcircleo"
-          size={50}
-          color="#576cd6"
+        <TouchableOpacity
           style={styles.floatButtonBack}
-          onPress={() => navigation.navigate("Home")}
-        />
+          onPress={() => navigation.navigate("Home", { initialTab: "Account" })}
+        >
+          <AntDesign name="leftcircleo" size={50} color="#576cd6" />
+        </TouchableOpacity>
         <Column>
           <ImageBackground
             source={{ uri: images ? images[0] : "" }}

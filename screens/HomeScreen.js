@@ -21,32 +21,36 @@ import firebase from "firebase/compat/app";
 import { ThemeConsumer } from "@rneui/themed";
 import { Platform } from "react-native";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import ModalScreen from "./ModalScreen";
+import ProfileScreen from "./ProfileScreen";
+import AccountScreen from "./AccountScreen";
 
-const Tab = createMaterialBottomTabNavigator(); 
+const Tab = createMaterialBottomTabNavigator();
 
-const HomeScreen = () => {
+const HomeScreen = ({ route }) => {
   function Feed() {
     return (
-      <View style={{ flex: 2, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 2, justifyContent: "center", alignItems: "center" }}>
         <Text>Feed!</Text>
       </View>
     );
   }
-  
+
   function Profile() {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-            </TouchableOpacity>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Modal")}
+        ></TouchableOpacity>
       </View>
     );
   }
-  
+
   function Notifications() {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Notifications!</Text>
       </View>
     );
@@ -70,77 +74,62 @@ const HomeScreen = () => {
     });
   }, []);
 
-  function AppBar() {
-    return <>
-         {/* Header */}
-      <View style={tw`flex-row items-center justify-between p-20`}>
-        <TouchableOpacity onPress={logOut}>
-          <Image
-            style={tw`h-10 w-10 rounded-full`}
-            source={{
-              uri: user?.photoURL
-                ? user?.photoURL
-                : "https://i.pinimg.com/originals/ec/61/d3/ec61d3114cc5269485d508244f531bdf.png",
-            }}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-          <Image style={tw`h-14 w-14`} source={require("../assets/logo.png")} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Chat")}>
-          <Ionicons name="chatbubbles-sharp" size={30} />
-        </TouchableOpacity>
-      </View>
-      {/* End of Header */}
-      </>;
-  }
-
   if (!fontLoaded) {
     return null;
   } else {
     return (
       <>
-    <Tab.Navigator
-        initialRouteName="Feed"
-        activeColor="#e91e63"
-        barStyle={{ backgroundColor: "#4F67D8"}}
-      >
-        <Tab.Screen
-          name="Feed"
-          component={Feed}
-          options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: () => (
-              <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-                <Image style={tw`h-10 w-10`} source={require("../assets/logo.png")} />
-              </TouchableOpacity>
-            ),
-          }} />
-        <Tab.Screen
-          name="Notifications"
-          component={Notifications}
-          options={{
-            tabBarLabel: 'Updates',
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="bell" color={color} size={26} />
-            ),
-          }} />
-        <Tab.Screen
-          name="Profile"
-          component={Profile}
-          options={{
-            tabBarLabel: 'Profile',
-            tabBarIcon: ({ color }) => (
-              <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-            <MaterialCommunityIcons name="account" color={color} size={26} />
-              </TouchableOpacity>
-              
-            ),
-          }} />
-      </Tab.Navigator></>
-);}
+        <Tab.Navigator
+          initialRouteName={
+            route?.params?.initialTab ? route?.params?.initialTab : "Feed"
+          }
+          activeColor="#576cd6"
+          labeled={false}
+          barStyle={{ backgroundColor: "#f0f0f0" }}
+        >
+          <Tab.Screen
+            name="Notifications"
+            component={ModalScreen}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <MaterialCommunityIcons name="bell" color={color} size={26} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Feed"
+            component={Feed}
+            options={{
+              tabBarIcon: () => (
+                <TouchableOpacity>
+                  <Image
+                    style={tw`h-8 w-8`}
+                    source={require("../assets/logo.png")}
+                  />
+                </TouchableOpacity>
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Account"
+            component={AccountScreen}
+            initialParams={{ uid: user.uid }}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <TouchableOpacity>
+                  <MaterialCommunityIcons
+                    name="account"
+                    color={color}
+                    size={26}
+                  />
+                </TouchableOpacity>
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </>
+    );
+  }
 
   // useLayoutEffect(
   //   () =>
