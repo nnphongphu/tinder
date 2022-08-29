@@ -95,7 +95,7 @@ const ModalScreen = () => {
         setBio(data?.bio);
         setGender(data?.gender);
         setJob(data?.job);
-        setImages(data?.images);
+        if (data?.images) setImages(data?.images);
         setSchool(data?.school);
       }
       setIsLoading(false);
@@ -127,7 +127,8 @@ const ModalScreen = () => {
 
       if (!pickerResult.cancelled) {
         const uploadUrl = await uploadImageAsync(pickerResult.uri);
-        setImages([...images, uploadUrl]);
+        if (images) setImages([...images, uploadUrl]);
+        else setImages([uploadUrl]);
       }
     } catch (e) {
       alert("Upload failed, sorry :(");
@@ -153,15 +154,12 @@ const ModalScreen = () => {
       xhr.send(null);
     });
 
-    const storageRef = ref(
-      storage,
-      `photos/${Math.round(Math.random() * 1000000000000).toString()}.jpg`
-    );
+    const randomNum = Math.round(Math.random() * 1000000000000);
+
+    const storageRef = ref(storage, `photos/${randomNum.toString()}.jpg`);
 
     await uploadBytes(storageRef, blob);
     blob.close();
-
-    //console.log("bie");
 
     const url = await getDownloadURL(storageRef);
     return url;
