@@ -6,7 +6,6 @@ import {
 } from "react-native";
 import { Image, ThemeProvider } from "@rneui/themed";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { auth } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import useAuth from "../hooks/useAuth";
 import {

@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { Image } from "@rneui/themed";
 import { StatusBar } from "expo-status-bar";
-import { auth } from "../firebaseConfig";
 import useAuth from "../hooks/useAuth";
 import { useNavigation } from "@react-navigation/native";
 import {
