@@ -21,6 +21,7 @@ import {
 } from "native-base";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
+import { db } from "../firebaseConfig";
 
 const RegisterScreen = () => {
   const [name, setName] = useState("");
@@ -38,6 +39,12 @@ const RegisterScreen = () => {
     try {
       setError("");
       await signUp(email, password);
+      await db.collection("Users")
+      .doc(user.user.uid)
+      .set({
+        displayName: name,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
       navigation.navigate("Home");
     } catch (err) {
       setError(err.message);

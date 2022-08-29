@@ -213,7 +213,7 @@ const HomeScreen = () => {
 
       {/* Cards */}
       <View style={tw`flex-1 -mt-6`}>
-        <Swiper
+        {/* <Swiper
           ref={swipeRef}
           useViewOverflow={Platform.OS === "ios"}
           containerStyle={{ backgroundColor: "transparent" }}
@@ -291,7 +291,7 @@ const HomeScreen = () => {
               </View>
             )
           }
-        />
+        /> */}
       </View>
       {/* End of Cards */}
       <View style={tw`flex flex-row justify-evenly`}>
