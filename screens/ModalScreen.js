@@ -178,7 +178,7 @@ const ModalScreen = () => {
           style={styles.container}
           resizeMode="contain"
           imageStyle={{
-            bottom: images && images.length === 9 ? 1134 : 1364,
+            bottom: (images.length === 9) ? 1134 : 1364,
           }}
         >
           {!isFirstTimer && (
