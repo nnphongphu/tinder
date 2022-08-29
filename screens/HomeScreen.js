@@ -1,11 +1,6 @@
 import { Avatar } from "@rneui/base";
-import React from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  MaterialIcons,
-  MaterialCommunityIcons,
-  Icon,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,9 +10,6 @@ import {
   Image,
   KeyboardAvoidingView,
   ImageBackground,
-  NativeBaseProvider,
-  Box,
-  Center,
 } from "react-native";
 import { db } from "../firebaseConfig";
 import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
@@ -28,65 +20,10 @@ import Swiper from "react-native-deck-swiper";
 import firebase from "firebase/compat/app";
 import { ThemeConsumer } from "@rneui/themed";
 import { Platform } from "react-native";
-import { HStack } from 'native-base';
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 
 const HomeScreen = () => {
-  
-  function NavBar() {
-    const [selected, setSelected] = React.useState(1);
-    return <NativeBaseProvider>
-        <Box flex={1} bg="white" safeAreaTop width="100%" maxW="300px" alignSelf="center">
-          <Center flex={1}></Center>
-          <HStack bg="indigo.600" alignItems="center" safeAreaBottom shadow={6}>
-            <Pressable cursor="pointer" opacity={selected === 0 ? 1 : 0.5} py="3" flex={1} onPress={() => setSelected(0)}>
-              <Center>
-                <Icon mb="1" as={<MaterialCommunityIcons name={selected === 0 ? 'home' : 'home-outline'} />} color="white" size="sm" />
-                <Text color="white" fontSize="12">
-                  Home
-                </Text>
-              </Center>
-            </Pressable>
-            <Pressable cursor="pointer" opacity={selected === 1 ? 1 : 0.5} py="2" flex={1} onPress={() => setSelected(1)}>
-              <Center>
-                <Icon mb="1" as={<MaterialIcons name="search" />} color="white" size="sm" />
-                <Text color="white" fontSize="12">
-                  Search
-                </Text>
-              </Center>
-            </Pressable>
-            <Pressable cursor="pointer" opacity={selected === 2 ? 1 : 0.6} py="2" flex={1} onPress={() => setSelected(2)}>
-              <Center>
-                <Icon mb="1" as={<MaterialCommunityIcons name={selected === 2 ? 'cart' : 'cart-outline'} />} color="white" size="sm" />
-                <Text color="white" fontSize="12">
-                  Cart
-                </Text>
-              </Center>
-            </Pressable>
-            <Pressable cursor="pointer" opacity={selected === 3 ? 1 : 0.5} py="2" flex={1} onPress={() => setSelected(3)}>
-              <Center>
-                <Icon mb="1" as={<MaterialCommunityIcons name={selected === 3 ? 'account' : 'account-outline'} />} color="white" size="sm" />
-                <Text color="white" fontSize="12">
-                  Account
-                </Text>
-              </Center>
-            </Pressable>
-          </HStack>
-        </Box>
-      </NativeBaseProvider>;
-  }
-
-  const bottomNav = () => {
-    return (
-      <NativeBaseProvider>
-        <Center flex={1} px="3">
-            <NavBar />
-        </Center>
-      </NativeBaseProvider>
-    );
-};
-
-const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState([]);
   const [passes, setPasses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -108,7 +45,7 @@ const [chats, setChats] = useState([]);
   function AppBar() {
     return <>
          {/* Header */}
-      <View style={tw`flex-row items-center justify-between p-10`}>
+      <View style={tw`flex-row items-center justify-between p-20`}>
         <TouchableOpacity onPress={logOut}>
           <Image
             style={tw`h-10 w-10 rounded-full`}
@@ -132,16 +69,12 @@ const [chats, setChats] = useState([]);
       </>;
   }
 
-
   if (!fontLoaded) {
     return null;
   } else {
     return <KeyboardAvoidingView style={tw`flex-1`}>
       <AppBar />
-      {/* <View style={tw`flex-1 -mt-6`}>
-      bottomNav(),
-      </View> */}
-
+ 
       
     </KeyboardAvoidingView>}
 
