@@ -16,17 +16,18 @@ import {
   Center,
   NativeBaseProvider,
   Flex,
-  Text,
+  Text, 
 } from "native-base";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
+import { Modal, FormControl } from 'native-base';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigation = useNavigation();
-  const { signIn, loading } = useAuth();
+  const { signIn, loading,resetPassword} = useAuth();
   const [show, setShow] = useState(false);
 
   let [fontLoaded] = useFonts({
@@ -38,6 +39,8 @@ const LoginScreen = () => {
       headerShown: false,
     });
   }, []);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   const logIn = async () => {
     try {
@@ -121,6 +124,17 @@ const LoginScreen = () => {
               placeholder="Password"
             />
           </Stack>
+          <Flex  direction="row-reverse" marginTop={2} >
+            <Text
+            
+              fontSize="sm"
+              onPress={() => setModalVisible(true)}
+              style={ { alignItems: "flex-start",color: "white",
+              fontWeight: "bold",justifyContent: "flex-end",} }
+            >
+              Forgot Password?
+            </Text>
+          </Flex>
           <Button onPress={logIn} style={styles.button}>
             <Text
               fontSize="md"
@@ -146,6 +160,28 @@ const LoginScreen = () => {
         Register
       </Button> */}
         </ImageBackground>
+        <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)} avoidKeyboard justifyContent="flex-end" bottom="300" size="lg">
+          <Modal.Content>
+            <Modal.CloseButton />
+            <Modal.Header style={ {color: "white"} }>Forgot Password?</Modal.Header>
+            <Modal.Body>
+              Enter email address and we'll send a link to reset your password.
+              <FormControl mt="3">
+                <FormControl.Label>Email</FormControl.Label>
+                <Input value={email}
+            onChangeText={(text) => setEmail(text)} />
+              </FormControl>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button flex="1" onPress={() => {
+              resetPassword(email);
+              setModalVisible(false);
+            }}style={styles.button1}>
+                Proceed
+              </Button>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
       </KeyboardAvoidingView>
     );
   }
@@ -165,6 +201,11 @@ const styles = StyleSheet.create({
   button: {
     width: 300,
     marginTop: 100,
+    borderRadius: 40,
+    backgroundColor: "#4F67D8",
+  },
+  button1: {
+    width: 300,
     borderRadius: 40,
     backgroundColor: "#4F67D8",
   },

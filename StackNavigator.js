@@ -12,6 +12,7 @@ import ModalScreen from "./screens/ModalScreen";
 import MatchScreen from "./screens/MatchScreen";
 import MessageScreen from "./screens/MessageScreen";
 import StartScreen from "./screens/StartScreen";
+import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 
 const Stack = createNativeStackNavigator();
 const globalScreenOptions = {
@@ -37,6 +38,7 @@ export default function StackNavigator() {
             component={LoginScreen}
           />
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
       ) : (
         <>
