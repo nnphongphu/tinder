@@ -50,7 +50,8 @@ const ModalScreen = () => {
   });
   const navigation = useNavigation();
   const [isFirstTimer, setIsFirstTimer] = useState(false);
-  const incompleteForm = !bio || !age || !gender || images.length === 0;
+  const incompleteForm =
+    !bio || !age || !gender || (images && images.length === 0) || !images;
   const updateUserProfile = () => {
     db.collection("Users")
       .doc(user.user.uid)
@@ -179,7 +180,7 @@ const ModalScreen = () => {
           style={styles.container}
           resizeMode="contain"
           imageStyle={{
-            bottom: images.length === 9 ? 1134 : 1364,
+            bottom: images && images.length === 9 ? 1134 : 1364,
           }}
         >
           {!isFirstTimer && (
@@ -217,7 +218,7 @@ const ModalScreen = () => {
               return (
                 <Row space={3} key={`columns${index}`}>
                   {columns.map((id, index2) => {
-                    if (id >= images.length) {
+                    if ((images && id >= images.length) || !images) {
                       return (
                         <Center
                           key={`item${index}${index2}`}
@@ -230,7 +231,7 @@ const ModalScreen = () => {
                           borderColor="white"
                         />
                       );
-                    } else {
+                    } else if (images) {
                       return (
                         <ImageBackground
                           key={`item${index}${index2}`}
@@ -272,7 +273,7 @@ const ModalScreen = () => {
             We recommend using authentic photos for greatest experience.
             Uploading all 9 photos to increase matching rate!
           </Text>
-          {images.length <= 9 && (
+          {((images && images.length <= 9) || !images) && (
             <>
               <TouchableOpacity marginTop={30} onPress={_pickImage}>
                 <ImageBackground
