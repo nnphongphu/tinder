@@ -37,14 +37,13 @@ const RegisterScreen = () => {
 
   const register = async () => {
     try {
-      setError("");
-      await signUp(email, password);
-      await db.collection("Users")
-      .doc(user.user.uid)
-      .set({
-        displayName: name,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+      const credential = await signUp(email, password);
+      await db.collection("Users").doc(credential.user.uid).set(
+        {
+          displayName: name,
+        },
+        { merge: true }
+      );
       navigation.navigate("Home");
     } catch (err) {
       setError(err.message);

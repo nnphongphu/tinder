@@ -6,11 +6,12 @@ import {
 } from "react-native";
 import React, { useEffect, useState, useLayoutEffect } from "react";
 import useAuth from "../hooks/useAuth";
+import tw from "tailwind-react-native-classnames";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../firebaseConfig";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Entypo } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
-import { Text, Column, Button } from "native-base";
+import { Text, Column, Button, Row, Image } from "native-base";
 
 const ProfileScreen = ({ route }) => {
   const user = useAuth();
@@ -22,11 +23,17 @@ const ProfileScreen = ({ route }) => {
   const [displayName, setDisplayName] = useState("");
   const [school, setSchool] = useState("");
   const [gender, setGender] = useState("");
+  const [passesList, setPassesList] = useState([]);
+  const [swipesList, setSwipesList] = useState([]);
+  const [matchList, setMatchList] = useState([]);
+
   const { uid } = route.params;
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
   });
   const navigation = useNavigation();
+
+  const profile = { displayName, job, age, images, bio, school, gender };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -46,11 +53,134 @@ const ProfileScreen = ({ route }) => {
         setImages(data?.images);
         setSchool(data?.school);
         setDisplayName(data?.displayName);
+
+        const l = await db
+          .collection("Users")
+          .doc(uid)
+          .collection("passes")
+          .get();
+        if (l && l.docs && l.docs.length) {
+          let tl = [];
+          l.docs.forEach((doc) => tl.push(doc.id));
+          setPassesList(tl);
+        }
+
+        const m = await db
+          .collection("Users")
+          .doc(uid)
+          .collection("match")
+          .get();
+        if (m && m.docs && m.docs.length) {
+          let tm = [];
+          m.docs.forEach((doc) => tm.push(doc.id));
+          setMatchList(tm);
+        }
+
+        const r = await db
+          .collection("Users")
+          .doc(uid)
+          .collection("swipes")
+          .get();
+        if (r && r.docs && r.docs.length) {
+          let tr = [];
+          r.docs.forEach((doc) => tr.push(doc.id));
+          setSwipesList(tr);
+        }
       }
       setIsLoading(false);
     };
     getData();
   }, [user]);
+
+  const swipeLeft = async () => {
+    try {
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("passes")
+        .doc(uid)
+        .set(profile);
+
+      if (swipesList.includes(uid)) {
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("swipes")
+          .doc(uid)
+          .delete();
+      }
+
+      if (matchList.includes(uid)) {
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("match")
+          .doc(uid)
+          .delete();
+        await db
+          .collection("Users")
+          .doc(uid)
+          .collection("match")
+          .doc(user.user.uid)
+          .delete();
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  const swipeRight = async () => {
+    try {
+      const loggedInProfileSnapshot = await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .get();
+
+      const loggedInProfile = loggedInProfileSnapshot.data();
+
+      const matchedProfileSnapshot = await db
+        .collection("Users")
+        .doc(uid)
+        .collection("swipes")
+        .doc(user.user.uid)
+        .get();
+      console.log(matchedProfileSnapshot.exists);
+
+      if (!matchedProfileSnapshot.exists) {
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("swipes")
+          .doc(uid)
+          .set(profile);
+
+        if (passesList.includes(uid)) {
+          await db
+            .collection("Users")
+            .doc(user.user.uid)
+            .collection("passes")
+            .doc(uid)
+            .delete();
+        }
+      } else {
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("match")
+          .doc(uid)
+          .set(profile);
+
+        await db
+          .collection("Users")
+          .doc(uid)
+          .collection("match")
+          .doc(user.user.uid)
+          .set(loggedInProfile);
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   if (!fontLoaded || isLoading) {
     return null;
@@ -114,7 +244,8 @@ const ProfileScreen = ({ route }) => {
         >
           {bio}
         </Text>
-        {images.length > 1 &&
+        {images &&
+          images.length > 1 &&
           images.map((image, index) => {
             if (index >= 1)
               return (
@@ -167,6 +298,46 @@ const ProfileScreen = ({ route }) => {
             </Text>
           </Button>
         )}
+        {uid !== user.user.uid && matchList && !matchList.includes(uid) ? (
+          <Row
+            alignSelf={"center"}
+            justifyContent="center"
+            marginBottom={30}
+            paddingY={5}
+            space={30}
+            width={"100%"}
+            bgColor={"#f0f0f0"}
+          >
+            <AntDesign
+              name="minuscircleo"
+              size={50}
+              color="#576cd6"
+              onPress={swipeLeft}
+            />
+            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+              <Image
+                style={tw`h-14 w-14`}
+                source={require("../assets/logo.png")}
+              />
+            </TouchableOpacity>
+            <AntDesign
+              name="pluscircleo"
+              size={50}
+              color="#576cd6"
+              onPress={swipeRight}
+            />
+          </Row>
+        ) : null}
+        {uid !== user.user.uid && matchList && matchList.includes(uid) ? (
+          <Button
+            onPress={() => console.log("KHUNG CHAT HAI NGƯỜI")}
+            style={styles.button}
+          >
+            <Text fontSize="md" color="white" fontWeight={"bold"}>
+              Message
+            </Text>
+          </Button>
+        ) : null}
       </ScrollView>
     );
   }
