@@ -34,6 +34,7 @@ const ModalScreen = () => {
   const user = useAuth();
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [job, setJob] = useState(null);
   const [age, setAge] = useState(null);
   const [bio, setBio] = useState("");
@@ -48,6 +49,7 @@ const ModalScreen = () => {
     Lobster_400Regular,
   });
   const navigation = useNavigation();
+  const [isFirstTimer, setIsFirstTimer] = useState(false);
   const incompleteForm = !bio || !age || !gender || images.length === 0;
   const updateUserProfile = () => {
     db.collection("Users")
@@ -59,6 +61,7 @@ const ModalScreen = () => {
           job,
           age,
           gender,
+          school,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         },
         { merge: true }
@@ -84,13 +87,17 @@ const ModalScreen = () => {
       const snapshot = await db.collection("Users").doc(user.user.uid).get();
       if (snapshot.exists) {
         const data = snapshot.data();
-        console.log(data);
+        if (!data?.bio) {
+          setIsFirstTimer(true);
+        }
         setAge(data?.age);
         setBio(data?.bio);
         setGender(data?.gender);
+        setJob(data?.job);
         setImages(data?.images);
         setSchool(data?.school);
       }
+      setIsLoading(false);
     };
     getData();
   }, [user]);
@@ -159,7 +166,7 @@ const ModalScreen = () => {
     return url;
   }
 
-  if (!fontLoaded) {
+  if (!fontLoaded || isLoading) {
     return null;
   } else {
     return (
@@ -175,6 +182,15 @@ const ModalScreen = () => {
             bottom: images.length === 9 ? 1134 : 1364,
           }}
         >
+          {!isFirstTimer && (
+            <AntDesign
+              name="leftcircleo"
+              size={50}
+              color="white"
+              style={styles.floatButtonBack}
+              onPress={() => navigation.navigate("Home")}
+            />
+          )}
           <Text
             fontSize="4xl"
             color="white"
@@ -408,7 +424,6 @@ const ModalScreen = () => {
               value={school}
               onChangeText={(text) => setSchool(text)}
               style={styles.input}
-              keyboardType="numeric"
               placeholder="Your high school/university"
               fontSize={"md"}
             />
@@ -418,11 +433,7 @@ const ModalScreen = () => {
             onPress={updateUserProfile}
             style={styles.buttonInvert}
           >
-            <Text
-              fontSize="md"
-              color="white"
-              style={{ fontFamily: "Lobster_400Regular" }}
-            >
+            <Text fontSize="md" color="white" fontWeight="bold">
               Update
             </Text>
           </Button>
@@ -473,5 +484,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: -5,
     top: -5,
+  },
+  floatButtonBack: {
+    position: "absolute",
+    top: 30,
+    left: 15,
   },
 });
