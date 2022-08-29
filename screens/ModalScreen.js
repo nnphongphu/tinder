@@ -1,4 +1,10 @@
-import { StyleSheet, ScrollView, ImageBackground, View } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  ImageBackground,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import tw from "tailwind-react-native-classnames";
 import useAuth from "../hooks/useAuth";
@@ -6,6 +12,7 @@ import { TextInput } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import firebase from "firebase/compat/app";
 import { db } from "../firebaseConfig";
+import { AntDesign } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 import {
   Text,
@@ -16,32 +23,38 @@ import {
   FormControl,
   Select,
   CheckIcon,
+  Row,
+  Center,
 } from "native-base";
-import { Constants, ImagePicker, Permissions } from "expo";
-import { v4 as uuidv4 } from "uuid";
 import { storage } from "../firebaseConfig";
-import { ref } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import * as ImagePicker from "expo-image-picker";
 
 const ModalScreen = () => {
   const user = useAuth();
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [job, setJob] = useState(null);
   const [age, setAge] = useState(null);
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
   const [gender, setGender] = useState("");
+  const mapper = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 9],
+  ];
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
   });
   const navigation = useNavigation();
-  const incompleteForm = !bio || !age || !job;
+  const incompleteForm = !bio || !age || !gender || images.length === 0;
   const updateUserProfile = () => {
     db.collection("Users")
       .doc(user.user.uid)
       .set(
         {
-          photoURL: image,
+          images,
           bio,
           job,
           age,
@@ -58,18 +71,34 @@ const ModalScreen = () => {
       });
   };
 
+  // useEffect(() => {
+  //   const permission = async () => {
+  //     await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //     await ImagePicker.requestCameraPermissionsAsync();
+  //   };
+  //   permission();
+  // }, []);
+
   useEffect(() => {
-    const permission = async () => {
-      await Permissions.askAsync(Permissions.CAMERA_ROLL);
-      await Permissions.askAsync(Permissions.CAMERA);
+    const getData = async () => {
+      const snapshot = await db.collection("Users").doc(user.user.uid).get();
+      if (snapshot.exists) {
+        const data = snapshot.data();
+        console.log(data);
+        setAge(data?.age);
+        setBio(data?.bio);
+        setGender(data?.gender);
+        setImages(data?.images);
+        setSchool(data?.school);
+      }
     };
-    permission();
-  });
+    getData();
+  }, [user]);
 
   _takePhoto = async () => {
     let pickerResult = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [3, 4],
     });
     console.log("taking a photo");
     _handleImagePicked(pickerResult);
@@ -78,7 +107,7 @@ const ModalScreen = () => {
   _pickImage = async () => {
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [3, 4],
     });
     console.log("just picking... ");
     _handleImagePicked(pickerResult);
@@ -90,7 +119,7 @@ const ModalScreen = () => {
 
       if (!pickerResult.cancelled) {
         const uploadUrl = await uploadImageAsync(pickerResult.uri);
-        setImage(uploadUrl);
+        setImages([...images, uploadUrl]);
       }
     } catch (e) {
       alert("Upload failed, sorry :(");
@@ -116,11 +145,18 @@ const ModalScreen = () => {
       xhr.send(null);
     });
 
-    const r = ref(storage, uuidv4());
-    const snapshot = await r.put(blob);
+    const storageRef = ref(
+      storage,
+      `photos/${Math.round(Math.random() * 1000000000000).toString()}.jpg`
+    );
+
+    await uploadBytes(storageRef, blob);
     blob.close();
 
-    return await snapshot.ref.getDownloadURL();
+    //console.log("bie");
+
+    const url = await getDownloadURL(storageRef);
+    return url;
   }
 
   if (!fontLoaded) {
@@ -136,70 +172,134 @@ const ModalScreen = () => {
           style={styles.container}
           resizeMode="contain"
           imageStyle={{
-            bottom: 734,
+            bottom: images.length === 9 ? 1134 : 1364,
           }}
         >
           <Text
             fontSize="4xl"
             color="white"
             marginTop={300}
-            marginBottom={50}
             style={{ fontFamily: "Lobster_400Regular" }}
           >
             Edit Profile
           </Text>
-          <Column>
-            <ImageBackground
-              source={require("../assets/gallery.png")}
-              resizeMode="cover"
-            >
-              <Column
-                width={310}
-                height={100}
-                paddingY={15}
-                paddingX={15}
-                onPress={_pickImage}
-              >
-                <Text color="white" fontSize="md" alignSelf="flex-start">
-                  Upload from
-                </Text>
-                <Text
-                  color="white"
-                  fontSize="3xl"
-                  fontWeight="bold"
-                  alignSelf="flex-start"
-                >
-                  Gallery
-                </Text>
-              </Column>
-            </ImageBackground>
+          <Text fontSize="lg" color="white" marginBottom={50}>
+            Show the world what you've got!
+          </Text>
+          <Text
+            color="white"
+            fontSize="md"
+            alignSelf="flex-start"
+            fontWeight="bold"
+            marginBottom={2}
+            style={{ marginHorizontal: 10 }}
+          >
+            PHOTOS *
+          </Text>
+          <Column space={3}>
+            {mapper.map((columns, index) => {
+              return (
+                <Row space={3} key={`columns${index}`}>
+                  {columns.map((id, index2) => {
+                    if (id >= images.length) {
+                      return (
+                        <Center
+                          key={`item${index}${index2}`}
+                          height={40}
+                          width={120}
+                          bg="transparent"
+                          borderRadius={10}
+                          borderStyle="dashed"
+                          borderWidth={3}
+                          borderColor="white"
+                        />
+                      );
+                    } else {
+                      return (
+                        <ImageBackground
+                          key={`item${index}${index2}`}
+                          source={{ uri: images[id] }}
+                          resizeMode="cover"
+                          borderRadius={10}
+                        >
+                          <Center height={40} width={120} bg="transparent">
+                            <AntDesign
+                              name="closecircle"
+                              size={20}
+                              color="white"
+                              style={styles.floatButton}
+                              onPress={() =>
+                                setImages([
+                                  ...images.filter(
+                                    (image) => image !== images[id]
+                                  ),
+                                ])
+                              }
+                            />
+                          </Center>
+                        </ImageBackground>
+                      );
+                    }
+                  })}
+                </Row>
+              );
+            })}
           </Column>
-          <Column style={{ marginTop: 30 }}>
-            <ImageBackground
-              source={require("../assets/camera.png")}
-              resizeMode="cover"
-            >
-              <Column
-                width={310}
-                height={100}
-                paddingY={15}
-                paddingX={15}
-                onPress={_takePhoto}
-              >
-                <Text color="white" fontSize="md" alignSelf="flex-start">
-                  Capture from
-                </Text>
-                <Text
-                  color="white"
-                  fontSize="3xl"
-                  fontWeight="bold"
-                  alignSelf="flex-start"
+          <Text
+            color="white"
+            fontSize={"sm"}
+            marginBottom={5}
+            marginTop={2}
+            alignSelf="flex-start"
+            style={{ marginHorizontal: 12 }}
+          >
+            We recommend using authentic photos for greatest experience.
+            Uploading all 9 photos to increase matching rate!
+          </Text>
+          {images.length <= 9 && (
+            <>
+              <TouchableOpacity marginTop={30} onPress={_pickImage}>
+                <ImageBackground
+                  source={require("../assets/gallery.png")}
+                  resizeMode="cover"
                 >
-                  Camera
-                </Text>
-              </Column>
-            </ImageBackground>
-          </Column>
+                  <Column width={310} height={100} paddingY={15} paddingX={15}>
+                    <Text color="white" fontSize="md" alignSelf="flex-start">
+                      Upload from
+                    </Text>
+                    <Text
+                      color="white"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                      alignSelf="flex-start"
+                    >
+                      Gallery
+                    </Text>
+                  </Column>
+                </ImageBackground>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginTop: 30 }} onPress={_takePhoto}>
+                <ImageBackground
+                  source={require("../assets/camera.png")}
+                  resizeMode="cover"
+                >
+                  <Column width={310} height={100} paddingY={15} paddingX={15}>
+                    <Text color="white" fontSize="md" alignSelf="flex-start">
+                      Capture from
+                    </Text>
+                    <Text
+                      color="white"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                      alignSelf="flex-start"
+                    >
+                      Camera
+                    </Text>
+                  </Column>
+                </ImageBackground>
+              </TouchableOpacity>
+            </>
+          )}
           <Column style={{ marginHorizontal: 10 }}>
             <Text
               color="white"
@@ -208,7 +308,7 @@ const ModalScreen = () => {
               marginTop={50}
               alignSelf="flex-start"
             >
-              ABOUT ME
+              ABOUT ME *
             </Text>
             <TextArea
               value={bio}
@@ -238,7 +338,7 @@ const ModalScreen = () => {
               marginTop={5}
               alignSelf="flex-start"
             >
-              GENDER
+              GENDER *
             </Text>
             <Select
               minWidth="200"
@@ -251,6 +351,7 @@ const ModalScreen = () => {
               color="black"
               fontSize={"md"}
               backgroundColor="white"
+              selectedValue={gender}
               onValueChange={(value) => setGender(value)}
             >
               <Select.Item label="Male" value="Male" />
@@ -258,6 +359,24 @@ const ModalScreen = () => {
               <Select.Item label="Non binary" value="Non binary" />
               <Select.Item label="Rather not share" value="Undefined" />
             </Select>
+            <Text
+              color="white"
+              fontWeight="bold"
+              marginBottom={2}
+              marginTop={5}
+              alignSelf="flex-start"
+            >
+              AGE *
+            </Text>
+            <Input
+              w="100%"
+              value={age}
+              onChangeText={(text) => setAge(text)}
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Your age"
+              fontSize={"md"}
+            />
             <Text
               color="white"
               fontWeight="bold"
@@ -282,29 +401,11 @@ const ModalScreen = () => {
               marginTop={5}
               alignSelf="flex-start"
             >
-              AGE
-            </Text>
-            <Input
-              w="100%"
-              value={age}
-              onChangeText={(text) => setAge(text)}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Your age"
-              fontSize={"md"}
-            />
-            <Text
-              color="white"
-              fontWeight="bold"
-              marginBottom={2}
-              marginTop={5}
-              alignSelf="flex-start"
-            >
               EDUCATION
             </Text>
             <Input
               w="100%"
-              value={age}
+              value={school}
               onChangeText={(text) => setSchool(text)}
               style={styles.input}
               keyboardType="numeric"
@@ -367,5 +468,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderStyle: "solid",
     borderColor: "white",
+  },
+  floatButton: {
+    position: "absolute",
+    right: -5,
+    top: -5,
   },
 });

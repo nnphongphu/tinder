@@ -22,161 +22,114 @@ import { Platform } from "react-native";
 const HomeScreen = () => {
   const [chats, setChats] = useState([]);
   const [passes, setPasses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  //const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigation = useNavigation();
   const { user, logOut } = useAuth();
   const swipeRef = useRef();
   const [profiles, setProfiles] = useState([]);
 
-  useLayoutEffect(
-    () =>
-      db.collection("Users").onSnapshot((snapshot) => {
-        if (!snapshot.docs.length) {
-          navigation.navigate("Modal");
-        }
-      }),
-    []
-  );
+  // useLayoutEffect(
+  //   () =>
+  //     db.collection("Users").onSnapshot((snapshot) => {
+  //       if (!snapshot.docs.length) {
+  //         navigation.navigate("Modal");
+  //       }
+  //     }),
+  //   []
+  // );
+  // const enterChat = (id, chatName) => {
+  //   navigation.navigate("Chat", {
+  //     id,
+  //     chatName,
+  //   });
+  // };
 
-  useEffect(() => {
-    let unsibscribe;
-    const fetchCards = async () => {
-      let passesIds = [];
-      unsibscribe = await db
-        .collection("Users")
-        .doc(user.uid)
-        .collection("passes")
-        .onSnapshot((snapshot) => {
-          passesIds = snapshot.docs.map((doc) => doc.id);
+  // const swipeLeft = async (cardIndex) => {
+  //   if (!profiles[cardIndex]) return;
+  //   const userSwiped = profiles[cardIndex];
+  //   try {
+  //     db.collection("Users")
+  //       .doc(user.uid)
+  //       .collection("passes")
+  //       .doc(userSwiped.id)
+  //       .set(userSwiped);
+  //   } catch (error) {
+  //     alert(error);
+  //   }
+  // };
 
-          try {
-            const passesUserIds = passesIds.length > 0 ? passesIds : ["test"];
-            db.collection("Users")
-              .where("id", "not-in", passesUserIds)
-              .get()
-              .then((snapshot) => {
-                setProfiles(
-                  snapshot.docs
-                    .filter((item) => item.id !== user.uid)
-                    .map((doc) => ({
-                      id: doc.id,
-                      ...doc.data(),
-                    }))
-                );
-              })
-              .catch((error) => {
-                alert(error);
-              });
-          } catch (error) {
-            alert(error);
-          }
-        });
-    };
+  // const swipeRight = async (cardIndex) => {
+  //   if (!profiles[cardIndex]) return;
+  //   const userSwiped = profiles[cardIndex];
+  //   let loggedInProfile, matchedProfile;
 
-    fetchCards();
-    setIsLoading(false);
-    return unsibscribe;
-  }, []);
+  //   await await db
+  //     .collection("Users")
+  //     .doc(user.uid)
+  //     .get()
+  //     .then((doc) => {
+  //       if (doc.exists) {
+  //         loggedInProfile = doc.data();
+  //       } else {
+  //         // doc.data() will be undefined in this case
+  //         console.log("No such document1!");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       alert("Error getting document:", error);
+  //     });
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-      headerTitleStyle: { color: "black" },
-      headerTintColor: "black",
-    });
-  }, []);
+  //   await await db
+  //     .collection("Users")
+  //     .doc(userSwiped.id.trim())
+  //     .collection("swipes")
+  //     .doc(user.uid)
+  //     .get()
+  //     .then((doc) => {
+  //       if (doc.exists) {
+  //         // user has matched with you before you matched with them...
+  //         matchedProfile = doc.data();
 
-  const enterChat = (id, chatName) => {
-    navigation.navigate("Chat", {
-      id,
-      chatName,
-    });
-  };
+  //         // Create a match...
+  //         db.collection("Matches")
+  //           .doc(user.uid + userSwiped.id)
+  //           .set({
+  //             users: {
+  //               [user.uid]: loggedInProfile,
+  //               [userSwiped.id]: userSwiped,
+  //             },
+  //             userMatched: [user.uid, userSwiped.id],
+  //             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  //           })
+  //           .then(() => {
+  //             navigation.navigate("Match", {
+  //               loggedInProfile,
+  //               userSwiped,
+  //             });
+  //           })
+  //           .catch((error) => {
+  //             alert(error);
+  //           });
+  //       } else {
+  //         console.log("No such document2!");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       alert("Error getting document:", error);
+  //     });
 
-  const swipeLeft = async (cardIndex) => {
-    if (!profiles[cardIndex]) return;
-    const userSwiped = profiles[cardIndex];
-    try {
-      db.collection("Users")
-        .doc(user.uid)
-        .collection("passes")
-        .doc(userSwiped.id)
-        .set(userSwiped);
-    } catch (error) {
-      alert(error);
-    }
-  };
-
-  const swipeRight = async (cardIndex) => {
-    if (!profiles[cardIndex]) return;
-    const userSwiped = profiles[cardIndex];
-    let loggedInProfile, matchedProfile;
-
-    await await db
-      .collection("Users")
-      .doc(user.uid)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
-          loggedInProfile = doc.data();
-        } else {
-          // doc.data() will be undefined in this case
-          console.log("No such document1!");
-        }
-      })
-      .catch((error) => {
-        alert("Error getting document:", error);
-      });
-
-    await await db
-      .collection("Users")
-      .doc(userSwiped.id.trim())
-      .collection("swipes")
-      .doc(user.uid)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
-          // user has matched with you before you matched with them...
-          matchedProfile = doc.data();
-
-          // Create a match...
-          db.collection("Matches")
-            .doc(user.uid + userSwiped.id)
-            .set({
-              users: {
-                [user.uid]: loggedInProfile,
-                [userSwiped.id]: userSwiped,
-              },
-              userMatched: [user.uid, userSwiped.id],
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            })
-            .then(() => {
-              navigation.navigate("Match", {
-                loggedInProfile,
-                userSwiped,
-              });
-            })
-            .catch((error) => {
-              alert(error);
-            });
-        } else {
-          console.log("No such document2!");
-        }
-      })
-      .catch((error) => {
-        alert("Error getting document:", error);
-      });
-
-    try {
-      db.collection("Users")
-        .doc(user.uid)
-        .collection("swipes")
-        .doc(userSwiped.id)
-        .set(userSwiped);
-    } catch (error) {
-      alert(error);
-    }
-  };
+  //   try {
+  //     db.collection("Users")
+  //       .doc(user.uid)
+  //       .collection("swipes")
+  //       .doc(userSwiped.id)
+  //       .set(userSwiped);
+  //   } catch (error) {
+  //     alert(error);
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -294,7 +247,7 @@ const HomeScreen = () => {
         /> */}
       </View>
       {/* End of Cards */}
-      <View style={tw`flex flex-row justify-evenly`}>
+      {/* <View style={tw`flex flex-row justify-evenly`}>
         <TouchableOpacity
           onPress={() => swipeRef.current.swipeLeft()}
           style={tw`items-center justify-center rounded-full w-16 h-16 bg-red-200`}
@@ -307,7 +260,7 @@ const HomeScreen = () => {
         >
           <AntDesign name="heart" size={24} />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 };

@@ -29,7 +29,7 @@ initializeAuth(app, {
 });
 
 const auth = getAuth();
-const storage = getStorage(app);
+const storage = getStorage();
 
 // const db = null;
 // const auth = null;
