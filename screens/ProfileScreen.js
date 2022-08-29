@@ -56,7 +56,7 @@ const ProfileScreen = ({ route }) => {
 
         const l = await db
           .collection("Users")
-          .doc(uid)
+          .doc(user.user.uid)
           .collection("passes")
           .get();
         if (l && l.docs && l.docs.length) {
@@ -67,7 +67,7 @@ const ProfileScreen = ({ route }) => {
 
         const m = await db
           .collection("Users")
-          .doc(uid)
+          .doc(user.user.uid)
           .collection("match")
           .get();
         if (m && m.docs && m.docs.length) {
@@ -78,7 +78,7 @@ const ProfileScreen = ({ route }) => {
 
         const r = await db
           .collection("Users")
-          .doc(uid)
+          .doc(user.user.uid)
           .collection("swipes")
           .get();
         if (r && r.docs && r.docs.length) {
@@ -101,29 +101,25 @@ const ProfileScreen = ({ route }) => {
         .doc(uid)
         .set(profile);
 
-      if (swipesList.includes(uid)) {
-        await db
-          .collection("Users")
-          .doc(user.user.uid)
-          .collection("swipes")
-          .doc(uid)
-          .delete();
-      }
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("swipes")
+        .doc(uid)
+        .delete();
 
-      if (matchList.includes(uid)) {
-        await db
-          .collection("Users")
-          .doc(user.user.uid)
-          .collection("match")
-          .doc(uid)
-          .delete();
-        await db
-          .collection("Users")
-          .doc(uid)
-          .collection("match")
-          .doc(user.user.uid)
-          .delete();
-      }
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("match")
+        .doc(uid)
+        .delete();
+      await db
+        .collection("Users")
+        .doc(uid)
+        .collection("match")
+        .doc(user.user.uid)
+        .delete();
     } catch (error) {
       alert(error);
     }
@@ -144,7 +140,6 @@ const ProfileScreen = ({ route }) => {
         .collection("swipes")
         .doc(user.user.uid)
         .get();
-      console.log(matchedProfileSnapshot.exists);
 
       if (!matchedProfileSnapshot.exists) {
         await db
@@ -154,14 +149,12 @@ const ProfileScreen = ({ route }) => {
           .doc(uid)
           .set(profile);
 
-        if (passesList.includes(uid)) {
-          await db
-            .collection("Users")
-            .doc(user.user.uid)
-            .collection("passes")
-            .doc(uid)
-            .delete();
-        }
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("passes")
+          .doc(uid)
+          .delete();
       } else {
         await db
           .collection("Users")
@@ -308,7 +301,7 @@ const ProfileScreen = ({ route }) => {
             bgColor={"#f0f0f0"}
           >
             <AntDesign
-              name="minuscircleo"
+              name="minuscircle"
               size={50}
               color="#576cd6"
               onPress={swipeLeft}
@@ -320,7 +313,7 @@ const ProfileScreen = ({ route }) => {
               />
             </TouchableOpacity>
             <AntDesign
-              name="pluscircleo"
+              name="pluscircle"
               size={50}
               color="#576cd6"
               onPress={swipeRight}
