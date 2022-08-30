@@ -26,6 +26,7 @@ import ModalScreen from "./ModalScreen";
 import ProfileScreen from "./ProfileScreen";
 import AccountScreen from "./AccountScreen";
 import { Row, Text } from "native-base";
+import ChatScreen from "./ChatScreen";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -416,6 +417,22 @@ const HomeScreen = ({ route }) => {
                 <TouchableOpacity>
                   <MaterialCommunityIcons
                     name="account"
+                    color={color}
+                    size={26}
+                  />
+                </TouchableOpacity>
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Chat"
+            component={ChatScreen}
+            initialParams={{ uid: user.uid }}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <TouchableOpacity>
+                  <MaterialCommunityIcons
+                    name="message-text"
                     color={color}
                     size={26}
                   />
