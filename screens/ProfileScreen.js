@@ -305,7 +305,7 @@ const ProfileScreen = ({ route }) => {
                 >
                   {`${displayName}, ${age}`}
                 </Text>
-                {school && (
+                {school ? (
                   <Text
                     fontSize={"md"}
                     color="white"
@@ -314,6 +314,16 @@ const ProfileScreen = ({ route }) => {
                     marginBottom={30}
                   >
                     {school}
+                  </Text>
+                ) : (
+                  <Text
+                    fontSize={"md"}
+                    color="white"
+                    fontWeight={"bold"}
+                    marginLeft={30}
+                    marginBottom={30}
+                  >
+                    {gender}
                   </Text>
                 )}
               </Column>
