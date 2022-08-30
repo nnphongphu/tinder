@@ -96,34 +96,31 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         r.docs.forEach((doc) => tr.push(doc.id));
         setSwipesList(tr);
       } else if (r && r.docs) setSwipesList([]);
-      updateProfiles();
+      const currentUser = _allUsers.find((u) => u.id === user.uid);
+
+      const filterUsers = _allUsers.filter(
+        (u) =>
+          !swipesList.includes(u.id) &&
+          !passesList.includes(u.id) &&
+          !matchList.includes(u.id) &&
+          u.images &&
+          u.images.length >= 1 &&
+          u.id !== user.uid &&
+          (!currentUser?.minAge ||
+            (currentUser.minAge && u.age >= currentUser.minAge)) &&
+          (!currentUser?.maxAge ||
+            (currentUser.maxAge && u.age <= currentUser.maxAge)) &&
+          (!currentUser?.genderPreference ||
+            currentUser.genderPreference === "All" ||
+            u.gender === "Undefined" ||
+            currentUser.genderPreference === u.gender)
+      );
+
+      setProfiles(filterUsers);
       setIsLoading(false);
     };
-    getAllProfiles();
-  };
-
-  const updateProfiles = () => {
-    const currentUser = allUsers.find((u) => u.id === user.uid);
-
-    const filterUsers = allUsers.filter(
-      (u) =>
-        !swipesList.includes(u.id) &&
-        !passesList.includes(u.id) &&
-        !matchList.includes(u.id) &&
-        u.images &&
-        u.images.length >= 1 &&
-        u.id !== user.uid &&
-        (!currentUser?.minAge ||
-          (currentUser.minAge && u.age >= currentUser.minAge)) &&
-        (!currentUser?.maxAge ||
-          (currentUser.maxAge && u.age <= currentUser.maxAge)) &&
-        (!currentUser?.genderPreference ||
-          currentUser.genderPreference === "All" ||
-          u.gender === "Undefined" ||
-          currentUser.genderPreference === u.gender)
-    );
-
-    setProfiles(filterUsers);
+    if (!user) setIsLoading(true);
+    else if (user.uid) getAllProfiles();
   };
 
   let [fontLoaded] = useFonts({
@@ -140,7 +137,6 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
     const getUserInfo = async () => {
       const infoSnapshot = await db.collection("Users").doc(user.uid).get();
       const info = infoSnapshot.data();
-      console.log(info);
       if (!info?.bio) navigation.navigate("Modal");
     };
     if (user.uid) getUserInfo();
@@ -160,7 +156,6 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .collection("passes")
         .doc(uid)
         .set(profile);
-      updateProfiles();
 
       await db
         .collection("Users")
@@ -194,7 +189,6 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .collection("Users")
         .doc(user.uid)
         .get();
-      updateProfiles();
 
       const loggedInProfile = loggedInProfileSnapshot.data();
 
