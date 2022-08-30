@@ -68,8 +68,8 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .doc(user.uid)
         .collection("passes")
         .get();
+      let tl = [];
       if (l && l.docs && l.docs.length) {
-        let tl = [];
         l.docs.forEach((doc) => tl.push(doc.id));
         setPassesList(tl);
       } else if (l && l.docs) setPassesList([]);
@@ -79,8 +79,8 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .doc(user.uid)
         .collection("match")
         .get();
+      let tm = [];
       if (m && m.docs && m.docs.length) {
-        let tm = [];
         m.docs.forEach((doc) => tm.push(doc.id));
         setMatchList(tm);
       } else if (m && m.docs) setMatchList([]);
@@ -91,8 +91,8 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .collection("swipes")
         .get();
 
+      let tr = [];
       if (r && r.docs && r.docs.length) {
-        let tr = [];
         r.docs.forEach((doc) => tr.push(doc.id));
         setSwipesList(tr);
       } else if (r && r.docs) setSwipesList([]);
@@ -100,9 +100,9 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
 
       const filterUsers = _allUsers.filter(
         (u) =>
-          !swipesList.includes(u.id) &&
-          !passesList.includes(u.id) &&
-          !matchList.includes(u.id) &&
+          !tl.includes(u.id) &&
+          !tr.includes(u.id) &&
+          !tm.includes(u.id) &&
           u.images &&
           u.images.length >= 1 &&
           u.id !== user.uid &&
