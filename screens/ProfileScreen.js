@@ -389,7 +389,7 @@ const ProfileScreen = ({ route }) => {
               marginBottom={5}
               style={{ marginHorizontal: 10 }}
             >
-              {job || "Not declared yet"}
+              {!!job || "Not declared yet"}
             </Text>
           </Column>
           {uid === user.user.uid && (

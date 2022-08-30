@@ -153,14 +153,13 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
   const swipeLeft = async (cardIndex) => {
     const { id: uid, ...profile } = profiles[cardIndex];
     try {
-      setCurrentIndex(cardIndex);
+      setCurrentIndex(cardIndex + 1);
       await db
         .collection("Users")
         .doc(user.uid)
         .collection("passes")
         .doc(uid)
         .set(profile);
-      setPassesList([...passesList, profiles[cardIndex].id]);
       updateProfiles();
 
       await db
@@ -190,12 +189,11 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
   const swipeRight = async (cardIndex) => {
     const { id: uid, ...profile } = profiles[cardIndex];
     try {
-      setCurrentIndex(cardIndex);
+      setCurrentIndex(cardIndex + 1);
       const loggedInProfileSnapshot = await db
         .collection("Users")
         .doc(user.uid)
         .get();
-      setSwipesList([...swipesList, profiles[cardIndex].id]);
       updateProfiles();
 
       const loggedInProfile = loggedInProfileSnapshot.data();
@@ -299,7 +297,6 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
 
       return unsubscribe;
     }, [navNavigation]);
-
     useEffect(() => {
       const unsubscribe = navNavigation.addListener("tabPress", (e) => {
         refresh();
@@ -339,7 +336,8 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
                 useViewOverflow={Platform.OS === "ios"}
                 containerStyle={{ backgroundColor: "transparent" }}
                 cards={profiles}
-                cardIndex={0}
+                cardIndex={currentIndex}
+                stackSize={3}
                 animateCardOpacity
                 onSwipedLeft={(cardIndex) => {
                   swipeLeft(cardIndex);

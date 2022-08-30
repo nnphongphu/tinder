@@ -59,7 +59,7 @@ const HistoryScreen = ({ route, navigation: navNavigation }) => {
       );
 
     useEffect(() => {
-      const indexes = Array.from(Array(swipesList).keys());
+      const indexes = Array.from(swipesList.keys());
       let _mapper = [];
       for (let i = 0; i < indexes.length; i += 2)
         _mapper.push(indexes.slice(i, i + 2));
@@ -169,7 +169,7 @@ const HistoryScreen = ({ route, navigation: navNavigation }) => {
       );
 
     useEffect(() => {
-      const indexes = Array.from(Array(passesList).keys());
+      const indexes = Array.from(passesList.keys());
       let _mapper = [];
       for (let i = 0; i < indexes.length; i += 2)
         _mapper.push(indexes.slice(i, i + 2));
