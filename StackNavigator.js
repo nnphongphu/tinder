@@ -5,11 +5,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import HomeScreen from "./screens/HomeScreen";
-import AddChatScreen from "./screens/AddChatScreen";
 import ChatScreen from "./screens/ChatScreen";
 import useAuth from "./hooks/useAuth";
 import ModalScreen from "./screens/ModalScreen";
-import MatchScreen from "./screens/MatchScreen";
 import MessageScreen from "./screens/MessageScreen";
 import StartScreen from "./screens/StartScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
@@ -91,17 +89,6 @@ export default function StackNavigator() {
             <Stack.Screen
               name="Modal"
               component={ModalScreen}
-              options={{
-                header: () => {
-                  return null;
-                },
-              }}
-            />
-          </Stack.Group>
-          <Stack.Group screenOptions={{ presentation: "transparentModal" }}>
-            <Stack.Screen
-              name="Match"
-              component={MatchScreen}
               options={{
                 header: () => {
                   return null;
