@@ -186,39 +186,34 @@ const ProfileScreen = ({ route }) => {
           title: "Matched!",
           button: true,
           icon:
-            loggedInProfile && images
-              ? () => {
-                  return (
-                    <>
-                      <Center>
-                        <Avatar.Group
-                          _avatar={{
-                            size: "lg",
-                          }}
-                          max={2}
-                        >
-                          <Avatar
-                            bg="green.500"
-                            source={{
-                              uri: loggedInProfile.images[0],
-                            }}
-                          >
-                            I
-                          </Avatar>
-                          <Avatar
-                            bg="cyan.500"
-                            source={{
-                              uri: images[0],
-                            }}
-                          >
-                            U
-                          </Avatar>
-                        </Avatar.Group>
-                      </Center>
-                    </>
-                  );
-                }
-              : false,
+            loggedInProfile && images ? (
+              <Avatar.Group
+                _avatar={{
+                  size: "xl",
+                }}
+                style={{ transform: [{ translateY: -10 }] }}
+                max={2}
+              >
+                <Avatar
+                  bg="green.500"
+                  source={{
+                    uri: loggedInProfile.images[0],
+                  }}
+                >
+                  I
+                </Avatar>
+                <Avatar
+                  bg="cyan.500"
+                  source={{
+                    uri: images[0],
+                  }}
+                >
+                  U
+                </Avatar>
+              </Avatar.Group>
+            ) : (
+              false
+            ),
           textBody:
             "You twos found each other! Take the lead by texting first!",
           buttonText: "Ok",
@@ -386,7 +381,7 @@ const ProfileScreen = ({ route }) => {
           ) : null}
           {uid !== user.user.uid && matchList && matchList.includes(uid) ? (
             <Button
-              onPress={() => console.log("KHUNG CHAT HAI NGƯỜI")}
+              onPress={() => navigation.navigate("Chat", { uid })}
               style={styles.button}
             >
               <Text fontSize="md" color="white" fontWeight={"bold"}>

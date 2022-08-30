@@ -12,22 +12,15 @@ import {
   Animated,
 } from "react-native";
 import { db } from "../firebaseConfig";
-import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import useAuth from "../hooks/useAuth";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { Row, Text, Column, Center, Spinner, Image } from "native-base";
-import { TabView, SceneMap } from "react-native-tab-view";
 import tw from "tailwind-react-native-classnames";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import { useIsFocused } from "@react-navigation/native";
-
 const Tab = createMaterialBottomTabNavigator();
 
 const LikedScreen = ({ route, navigation: navNavigation }) => {
-  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(true);
   const [profiles, setProfiles] = useState([]);
   const [index, setIndex] = useState(0);
@@ -50,8 +43,8 @@ const LikedScreen = ({ route, navigation: navNavigation }) => {
 
   const getAllProfiles = async () => {
     setIsLoading(true);
-
     const allUsersSnapshot = await db.collection("Users").get();
+
     let allUsers = [];
     allUsersSnapshot.docs.forEach((doc) => {
       allUsers.push({ ...doc.data(), id: doc.id });
@@ -72,6 +65,7 @@ const LikedScreen = ({ route, navigation: navNavigation }) => {
       const ans = await isLikedBy(allUsers[i].id);
       if (ans) result.push(allUsers[i]);
     }
+
     setProfiles(result);
     setIsLoading(false);
   };
@@ -94,13 +88,17 @@ const LikedScreen = ({ route, navigation: navNavigation }) => {
     return unsubscribe;
   }, [navNavigation]);
 
+  useEffect(() => {
+    getAllProfiles();
+  }, []);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, []);
 
-  if (!fontLoaded || !profiles) {
+  if (!fontLoaded || !profiles || isLoading) {
     return (
       <Column
         width="100%"

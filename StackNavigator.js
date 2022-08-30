@@ -56,7 +56,6 @@ export default function StackNavigator() {
               initialParams={{ uid: user.uid }}
               component={ProfileScreen}
             />
-            <Stack.Screen name="AddChat" component={AddChatScreen} />
             <Stack.Screen
               name="Chat"
               component={ChatScreen}

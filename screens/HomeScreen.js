@@ -1,4 +1,3 @@
-import { Avatar } from "@rneui/base";
 import {
   useCallback,
   useEffect,
@@ -32,15 +31,15 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import ModalScreen from "./ModalScreen";
 import ProfileScreen from "./ProfileScreen";
 import AccountScreen from "./AccountScreen";
-import { Center, Column, Row, Spinner, Text } from "native-base";
+import { Center, Column, Row, Spinner, Text, Avatar } from "native-base";
 import HistoryScreen from "./HistoryScreen";
-import { useIsFocused } from "@react-navigation/native";
 import LikedScreen from "./LikedScreen";
+import { Root, Popup } from "popup-ui";
+import MessageScreen from "./MessageScreen";
 
 const Tab = createMaterialBottomTabNavigator();
 
 const HomeScreen = ({ route, navigation: navNavigation }) => {
-  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(true);
   const [passesList, setPassesList] = useState([]);
   const [matchList, setMatchList] = useState([]);
@@ -113,6 +112,20 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
     getAllProfiles();
   };
 
+  const updateProfiles = () => {
+    const filterUsers = allUsers.filter(
+      (u) =>
+        !swipesList.includes(u.id) &&
+        !passesList.includes(u.id) &&
+        !matchList.includes(u.id) &&
+        u.images &&
+        u.images.length >= 1 &&
+        u.id !== user.uid
+    );
+
+    setProfiles(filterUsers);
+  };
+
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
   });
@@ -121,6 +134,10 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
     navigation.setOptions({
       headerShown: false,
     });
+  }, []);
+
+  useEffect(() => {
+    refresh();
   }, []);
 
   const swipeLeft = async (cardIndex) => {
@@ -134,6 +151,7 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .doc(uid)
         .set(profile);
       setPassesList([...passesList, profiles[cardIndex].id]);
+      updateProfiles();
 
       await db
         .collection("Users")
@@ -168,6 +186,7 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         .doc(user.uid)
         .get();
       setSwipesList([...swipesList, profiles[cardIndex].id]);
+      updateProfiles();
 
       const loggedInProfile = loggedInProfileSnapshot.data();
 
@@ -206,21 +225,71 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
           .collection("match")
           .doc(user.uid)
           .set(loggedInProfile);
+
+        await db
+          .collection("Users")
+          .doc(uid)
+          .collection("swipes")
+          .doc(user.uid)
+          .delete();
+        Popup.show({
+          type: "Success",
+          title: "Matched!",
+          button: true,
+          icon:
+            loggedInProfile &&
+            loggedInProfile.images &&
+            profile &&
+            profile.images ? (
+              <Avatar.Group
+                _avatar={{
+                  size: "xl",
+                }}
+                style={{ transform: [{ translateY: -50 }] }}
+                max={2}
+              >
+                <Avatar
+                  bg="green.500"
+                  source={{
+                    uri: loggedInProfile.images[0],
+                  }}
+                >
+                  I
+                </Avatar>
+                <Avatar
+                  bg="cyan.500"
+                  source={{
+                    uri: profile.images[0],
+                  }}
+                >
+                  U
+                </Avatar>
+              </Avatar.Group>
+            ) : (
+              false
+            ),
+          textBody:
+            "You twos found each other! Take the lead by texting first!",
+          buttonText: "Ok",
+          callback: () => {
+            Popup.hide();
+          },
+        });
       }
     } catch (error) {
       alert(error);
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = navNavigation.addListener("focus", (e) => {
-      refresh();
-    });
-
-    return unsubscribe;
-  }, []);
-
   const Feed = ({ navigation: navNavigation }) => {
+    useEffect(() => {
+      const unsubscribe = navNavigation.addListener("focus", (e) => {
+        refresh();
+      });
+
+      return unsubscribe;
+    }, [navNavigation]);
+
     useEffect(() => {
       const unsubscribe = navNavigation.addListener("tabPress", (e) => {
         refresh();
@@ -242,138 +311,140 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
       );
     } else {
       return (
-        <SafeAreaView style={[tw`flex-1`]}>
-          <View style={tw`flex-row items-center justify-center pt-10`}>
-            <Text
-              fontSize="xl"
-              color="#576cd6"
-              alignSelf={"center"}
-              style={{ fontFamily: "Lobster_400Regular" }}
-            >
-              Platonic
-            </Text>
-          </View>
-          <View style={tw`flex-1 -mt-14`}>
-            <Swiper
-              ref={swipeRef}
-              useViewOverflow={Platform.OS === "ios"}
-              containerStyle={{ backgroundColor: "transparent" }}
-              cards={profiles}
-              cardIndex={0}
-              animateCardOpacity
-              onSwipedLeft={(cardIndex) => {
-                swipeLeft(cardIndex);
-              }}
-              onSwipedRight={(cardIndex) => {
-                swipeRight(cardIndex);
-              }}
-              onSwipedTop={(cardIndex) => {
-                swipeRight(cardIndex);
-              }}
-              onSwipedBottom={(cardIndex) => {
-                swipeLeft(cardIndex);
-              }}
-              renderCard={(card) =>
-                card ? (
-                  <TouchableOpacity
-                    key={card.id}
-                    style={tw`relative bg-white h-3/4 rounded-xl`}
-                    onPress={() =>
-                      navigation.navigate("Profile", { uid: card.id })
-                    }
-                  >
-                    <Image
-                      style={tw`absolute top-0 h-full w-full rounded-xl`}
-                      source={{ uri: card.images[0] }}
-                    />
+        <Root>
+          <SafeAreaView style={[tw`flex-1`]}>
+            <View style={tw`flex-row items-center justify-center pt-10`}>
+              <Text
+                fontSize="xl"
+                color="#576cd6"
+                alignSelf={"center"}
+                style={{ fontFamily: "Lobster_400Regular" }}
+              >
+                Platonic
+              </Text>
+            </View>
+            <View style={tw`flex-1 -mt-14`}>
+              <Swiper
+                ref={swipeRef}
+                useViewOverflow={Platform.OS === "ios"}
+                containerStyle={{ backgroundColor: "transparent" }}
+                cards={profiles}
+                cardIndex={0}
+                animateCardOpacity
+                onSwipedLeft={(cardIndex) => {
+                  swipeLeft(cardIndex);
+                }}
+                onSwipedRight={(cardIndex) => {
+                  swipeRight(cardIndex);
+                }}
+                onSwipedTop={(cardIndex) => {
+                  swipeRight(cardIndex);
+                }}
+                onSwipedBottom={(cardIndex) => {
+                  swipeLeft(cardIndex);
+                }}
+                renderCard={(card) =>
+                  card ? (
+                    <TouchableOpacity
+                      key={card.id}
+                      style={tw`relative bg-white h-3/4 rounded-xl`}
+                      onPress={() =>
+                        navigation.navigate("Profile", { uid: card.id })
+                      }
+                    >
+                      <Image
+                        style={tw`absolute top-0 h-full w-full rounded-xl`}
+                        source={{ uri: card.images[0] }}
+                      />
+                      <View
+                        style={[
+                          tw`absolute bottom-0 bg-white w-full flex-row justify-between items-center h-20 px-6 py-2 rounded-b-xl`,
+                          styles.cardShadow,
+                          { backgroundColor: "#576cd6" },
+                        ]}
+                      >
+                        <View>
+                          <Text style={tw`text-xl font-bold`} color="white">
+                            {card.displayName}
+                          </Text>
+                          <Text color="white">{card.job}</Text>
+                        </View>
+                        <Text style={tw`text-2xl font-bold`} color="white">
+                          {card.age}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
                     <View
                       style={[
-                        tw`absolute bottom-0 bg-white w-full flex-row justify-between items-center h-20 px-6 py-2 rounded-b-xl`,
+                        tw`relative bg-white h-3/4 rounded-xl justify-center items-center`,
                         styles.cardShadow,
                         { backgroundColor: "#576cd6" },
                       ]}
                     >
-                      <View>
-                        <Text style={tw`text-xl font-bold`} color="white">
-                          {card.displayName}
-                        </Text>
-                        <Text color="white">{card.job}</Text>
-                      </View>
-                      <Text style={tw`text-2xl font-bold`} color="white">
-                        {card.age}
+                      <Text style={tw`font-bold pb-5`} color="white">
+                        No more profiles
                       </Text>
+                      <Image
+                        height={50}
+                        width={50}
+                        source={{
+                          uri: "https://dikpora.jogjaprov.go.id/web_lama/assets/images/icon/no_data.png",
+                        }}
+                      />
                     </View>
-                  </TouchableOpacity>
-                ) : (
-                  <View
-                    style={[
-                      tw`relative bg-white h-3/4 rounded-xl justify-center items-center`,
-                      styles.cardShadow,
-                      { backgroundColor: "#576cd6" },
-                    ]}
-                  >
-                    <Text style={tw`font-bold pb-5`} color="white">
-                      No more profiles
-                    </Text>
-                    <Image
-                      height={50}
-                      width={50}
-                      source={{
-                        uri: "https://dikpora.jogjaprov.go.id/web_lama/assets/images/icon/no_data.png",
-                      }}
-                    />
-                  </View>
-                )
-              }
-            />
-          </View>
-          <Row
-            alignSelf={"center"}
-            justifyContent="center"
-            marginBottom={30}
-            paddingY={5}
-            space={30}
-            width={"90%"}
-            borderRadius={20}
-          >
-            <TouchableOpacity
-              onPress={() =>
-                swipeRef.current.jumpToCardIndex(
-                  currentIndex === 0 ? 0 : currentIndex - 1
-                )
-              }
-            >
-              <AntDesign name="back" size={50} color="#576cd6" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => swipeRef.current.swipeLeft()}>
-              <AntDesign
-                name="minuscircle"
-                size={50}
-                color="#576cd6"
-                style={{ translateY: 10 }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => swipeRef.current.swipeRight()}>
-              <AntDesign
-                name="pluscircle"
-                size={50}
-                color="#576cd6"
-                style={{ translateY: 10 }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                if (currentIndex >= 0 && currentIndex < profiles.length) {
-                  navigation.navigate("Profile", {
-                    uid: profiles[currentIndex].id,
-                  });
+                  )
                 }
-              }}
+              />
+            </View>
+            <Row
+              alignSelf={"center"}
+              justifyContent="center"
+              marginBottom={30}
+              paddingY={5}
+              space={30}
+              width={"90%"}
+              borderRadius={20}
             >
-              <AntDesign name="search1" size={50} color="#576cd6" />
-            </TouchableOpacity>
-          </Row>
-        </SafeAreaView>
+              <TouchableOpacity
+                onPress={() =>
+                  swipeRef.current.jumpToCardIndex(
+                    currentIndex === 0 ? 0 : currentIndex - 1
+                  )
+                }
+              >
+                <AntDesign name="back" size={50} color="#576cd6" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => swipeRef.current.swipeLeft()}>
+                <AntDesign
+                  name="minuscircle"
+                  size={50}
+                  color="#576cd6"
+                  style={{ translateY: 10 }}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => swipeRef.current.swipeRight()}>
+                <AntDesign
+                  name="pluscircle"
+                  size={50}
+                  color="#576cd6"
+                  style={{ translateY: 10 }}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (currentIndex >= 0 && currentIndex < profiles.length) {
+                    navigation.navigate("Profile", {
+                      uid: profiles[currentIndex].id,
+                    });
+                  }
+                }}
+              >
+                <AntDesign name="search1" size={50} color="#576cd6" />
+              </TouchableOpacity>
+            </Row>
+          </SafeAreaView>
+        </Root>
       );
     }
   };
@@ -402,7 +473,7 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         >
           <Tab.Screen
             name="Message"
-            component={ModalScreen}
+            component={MessageScreen}
             options={{
               tabBarIcon: ({ color }) => (
                 <Entypo name="message" color={color} size={26} />

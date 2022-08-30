@@ -1,93 +1,246 @@
-import { useRoute } from '@react-navigation/native'
-import { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, TextInput, Button, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, FlatList } from 'react-native'
-import Header from '../components/Header'
-import useAuth from '../hooks/useAuth'
-import getMatchedUserInfo from '../lib/getMatchedUserInfo'
-import tw from 'tailwind-react-native-classnames';
-import SenderMessage from '../components/SenderMessage';
-import ReceiverMessage from '../components/ReceiverMessage';
-import firebase from 'firebase/compat/app';
-import { db } from '../firebaseConfig';
+import {
+  ScrollView,
+  View,
+  TouchableOpacity,
+  ImageBackground,
+} from "react-native";
+import tw from "tailwind-react-native-classnames";
+import { Text, Center, Column, Avatar, Row } from "native-base";
+import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
+import { db } from "../firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import { doc } from "firebase/firestore";
 
-const MessageScreen = () => {
+const MessageScreen = ({ navigation: navNavigation }) => {
   const { user } = useAuth();
-  const { params } = useRoute();
-  const [input, setInput] = useState("");
-  const [message, setMessage] = useState([]);
-  const { matchDetails } = params;
+  const [matchList, setMatchList] = useState([]);
+  const navigation = useNavigation();
+  const [list, setList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = db
-      .collection("Matches")
-      .doc(matchDetails.id)
-      .collection("messages")
-      .orderBy("timestamp", "desc")
-      .onSnapshot((snapshot) => setMessage(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-      ));
+  const getChatId = (uid1, uid2) => {
+    return uid1 < uid2 ? uid1.concat(uid2) : uid2.concat(uid1);
+  };
 
-      return unsubscribe;
-  }, [matchDetails, db]);
-
-  const sendMessage = () => {
+  const refresh = async () => {
     try {
-      db.collection("Matches").doc(matchDetails.id).collection("messages").add({
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        userId: user.uid,
-        displayName: user.displayName,
-        photoURL: matchDetails.users[user.uid].photoURL,
-        message: input
-      });
+      setIsLoading(true);
+      const _matchListSnapshot = await db
+        .collection("Users")
+        .doc(user.uid)
+        .collection("match")
+        .get();
+      let _matchList = [];
+      _matchListSnapshot.forEach((match) =>
+        _matchList.push({ ...match.data(), id: match.id })
+      );
+      setMatchList(_matchList);
 
-      setInput('');
-    }
-    catch(error) {
+      const _list = [];
+      for (let i = 0; i < _matchList.length; i++) {
+        const chatId = getChatId(user.uid, _matchList[i].id);
+        const docSnapshot = await db
+          .collection("chats")
+          .doc(chatId)
+          .collection("messages")
+          .orderBy("createdAt", "desc")
+          .limit(1)
+          .get();
+        if (docSnapshot.docs.length > 0) {
+          _list.push({
+            latestMessage: docSnapshot.docs[0].data(),
+            receiver: _matchList[i],
+          });
+        }
+      }
+
+      _list
+        .sort((a, b) => a.latestMessage.localeCompare(b.latestMessage))
+        .reverse();
+      setList(_list);
+      setIsLoading(false);
+    } catch (error) {
       alert(error);
     }
   };
 
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navNavigation.addListener("focus", (e) => {
+      refresh();
+    });
+
+    return unsubscribe;
+  }, [navNavigation]);
+
+  useEffect(() => {
+    const unsubscribe = navNavigation.addListener("tabPress", (e) => {
+      refresh();
+    });
+
+    return unsubscribe;
+  }, [navNavigation]);
+
   return (
-    <SafeAreaView style={tw`flex-1`}>
-      <Header title={getMatchedUserInfo(matchDetails?.users, user.uid).displayName} callEnabled/>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={tw`flex-1`}
-        keyboardVerticalOffset={10}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <FlatList 
-            data={message}
-            inverted={-1}
-            stype={tw`pl-4`}
-            keyExtractor={(item) => item.id}
-            renderItem={({item: message}) => 
-              message.userId === user.uid ? (
-                <SenderMessage key={message.id} message={message} />
-              ) : (
-                <ReceiverMessage key={message.id} message={message} />
-              )
-            }
-          />
-        </TouchableWithoutFeedback>
-        <View style={tw`flex-row justify-between items-center border-t border-gray-200 px-5 py-2`}>
-          <TextInput
-            style={tw`h-10 text-lg`}
-            placeholder="Send message..."
-            onChangeText={setInput}
-            onSubmitEditing={sendMessage}
-            value={input}
-          />
-          <Button onPress={sendMessage} title="Send" color="#FF5864"/>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  )
-}
+    <>
+      <View style={tw`flex-row items-center justify-center pt-10`}>
+        <Text
+          fontSize="xl"
+          color="#576cd6"
+          alignSelf={"center"}
+          style={{ fontFamily: "Lobster_400Regular" }}
+        >
+          Platonic
+        </Text>
+      </View>
+      <ScrollView style={{ paddingHorizontal: 10 }}>
+        <Text fontWeight="bold" fontSize="md" color="#576cd6">
+          New Matches
+        </Text>
+        <ScrollView horizontal={true}>
+          {matchList && matchList.length === 0 && (
+            <TouchableOpacity
+              onPress={() => navNavigation.jumpTo("Liked")}
+              style={{ marginTop: 3, marginRight: 3 }}
+            >
+              <Center height={200} width={122} bg="#576cd6">
+                <Column
+                  width="100%"
+                  backgroundColor="#576cd6"
+                  borderRadius={10}
+                  borderTopLeftRadius={0}
+                  borderTopRightRadius={0}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    paddingHorizontal: 5,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text
+                    style={styles.shadow}
+                    fontWeight="bold"
+                    color="white"
+                    fontSize="xl"
+                  >
+                    Likes
+                  </Text>
+                </Column>
+              </Center>
+            </TouchableOpacity>
+          )}
+          {matchList &&
+            matchList.map((match, index) => {
+              return (
+                <TouchableOpacity
+                  key={`item-${index}-${match.id}`}
+                  onPress={() =>
+                    navigation.navigate("Profile", {
+                      uid: match.id,
+                    })
+                  }
+                  style={{ marginTop: 3, marginRight: 10 }}
+                >
+                  <ImageBackground
+                    source={{ uri: match.images[0] }}
+                    resizeMode="cover"
+                    borderRadius={10}
+                  >
+                    <Center height={200} width={122} bg="transparent">
+                      <Column
+                        width="100%"
+                        backgroundColor={"#ffffff"}
+                        borderRadius={10}
+                        borderTopLeftRadius={0}
+                        borderTopRightRadius={0}
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          paddingHorizontal: 7,
+                          paddingVertical: 10,
+                        }}
+                      >
+                        <Text
+                          style={styles.shadow}
+                          fontWeight="bold"
+                          color="#576cd6"
+                          fontSize="xl"
+                        >
+                          {match.displayName}
+                        </Text>
+                      </Column>
+                    </Center>
+                  </ImageBackground>
+                </TouchableOpacity>
+              );
+            })}
+        </ScrollView>
+        <Text
+          fontWeight="bold"
+          fontSize="md"
+          color="#576cd6"
+          marginTop={5}
+          marginBottom={3}
+        >
+          Messages
+        </Text>
+        <Column space={3}>
+          {list &&
+            list.map((item, id) => {
+              return (
+                <TouchableOpacity
+                  key={`message-${id}`}
+                  onPress={() =>
+                    navigation.navigate("Chat", { uid: item.receiver.id })
+                  }
+                >
+                  <Row
+                    space={3}
+                    paddingHorizontal={10}
+                    paddingVertical={15}
+                    backgroundColor={"#e0e0e0"}
+                    alignItems="center"
+                    borderRadius={10}
+                  >
+                    <Avatar source={{ uri: item.receiver.images[0] }} size="lg">
+                      FF
+                    </Avatar>
+                    <Column>
+                      <Text fontWeight={"bold"} color="black" fontSize="xl">
+                        {item.receiver.displayName}
+                      </Text>
+                      <Text maxWidth={280} color="black" isTruncated={true}>
+                        {item.latestMessage.user._id === user.uid
+                          ? `You: ${item.latestMessage.text}`
+                          : item.latestMessage.text}
+                      </Text>
+                    </Column>
+                  </Row>
+                </TouchableOpacity>
+              );
+            })}
+        </Column>
+      </ScrollView>
+    </>
+  );
+};
 
-export default MessageScreen
+const styles = {
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
 
-const styles = StyleSheet.create({})
+    elevation: 5,
+  },
+};
+
+export default MessageScreen;

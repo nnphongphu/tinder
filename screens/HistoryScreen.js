@@ -81,6 +81,18 @@ const HistoryScreen = ({ route, navigation: navNavigation }) => {
       return (
         <ScrollView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
           <Column space={3} style={{ padding: 10 }}>
+            {swipesList && swipesList.length === 0 && (
+              <>
+                <Center width="100%" marginTop={30}>
+                  <Text textAlign="center">
+                    There are no right swipes yet!{"\n"}Swipe away!
+                  </Text>
+                </Center>
+                <Column alignItems="center" justifyContent="center">
+                  <Image source={require("../assets/patient.png")} size="2xl" />
+                </Column>
+              </>
+            )}
             {swipesList &&
               mapper.map((row, index) => {
                 return (
@@ -179,15 +191,27 @@ const HistoryScreen = ({ route, navigation: navNavigation }) => {
       return (
         <ScrollView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
           <Column space={3} style={{ padding: 10 }}>
+            {passesList && passesList.length === 0 && (
+              <>
+                <Center width="100%" marginTop={30}>
+                  <Text textAlign="center">
+                    There are no left swipes yet!{"\n"}Swipe away!
+                  </Text>
+                </Center>
+                <Column alignItems="center" justifyContent="center">
+                  <Image source={require("../assets/patient.png")} size="2xl" />
+                </Column>
+              </>
+            )}
             {passesList &&
               mapper.map((row, index) => {
                 return (
-                  <Row space={3} key={`row${index}`}>
+                  <Row space={3} key={`row2${index}`}>
                     {row.map((id, index2) => {
                       if (!passesList[id]?.images[0]) return null;
                       return (
                         <TouchableOpacity
-                          key={`item${index}${index2}`}
+                          key={`item1${index}${index2}`}
                           onPress={() =>
                             navigation.navigate("Profile", {
                               uid: passesList[id].id,
@@ -282,6 +306,7 @@ const HistoryScreen = ({ route, navigation: navNavigation }) => {
 
           return (
             <TouchableOpacity
+              key={`key${i}`}
               style={styles.tabItem}
               onPress={() => setIndex(i)}
             >

@@ -118,7 +118,7 @@ const AccountScreen = () => {
                   {
                     width: 200,
                     height: 200,
-                    borderColor: "#3a5093",
+                    borderColor: "#576cd6",
                     borderStyle: "solid",
                     borderWidth: 8,
                     padding: 8,
