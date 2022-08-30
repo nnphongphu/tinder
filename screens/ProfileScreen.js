@@ -228,6 +228,40 @@ const ProfileScreen = ({ route }) => {
     }
   };
 
+  const unmatch = async () => {
+    try {
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("swipes")
+        .doc(uid)
+        .delete();
+
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("passes")
+        .doc(uid)
+        .delete();
+
+      await db
+        .collection("Users")
+        .doc(user.user.uid)
+        .collection("match")
+        .doc(uid)
+        .delete();
+      await db
+        .collection("Users")
+        .doc(uid)
+        .collection("match")
+        .doc(user.user.uid)
+        .delete();
+      navigation.navigate("Home");
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   if (!fontLoaded || isLoading) {
     return (
       <Column
@@ -380,14 +414,27 @@ const ProfileScreen = ({ route }) => {
             </Row>
           ) : null}
           {uid !== user.user.uid && matchList && matchList.includes(uid) ? (
-            <Button
-              onPress={() => navigation.navigate("Chat", { uid })}
-              style={styles.button}
-            >
-              <Text fontSize="md" color="white" fontWeight={"bold"}>
-                Message
-              </Text>
-            </Button>
+            <>
+              <Button
+                onPress={() => navigation.goBack()}
+                style={[styles.button, { marginBottom: 5 }]}
+              >
+                <Text fontSize="md" color="white" fontWeight={"bold"}>
+                  Message {" <3"}
+                </Text>
+              </Button>
+              <Button
+                onPress={() => {
+                  unmatch();
+                  navigation.goBack();
+                }}
+                style={[styles.button, { backgroundColor: "#e6002a" }]}
+              >
+                <Text fontSize="md" color="white" fontWeight={"bold"}>
+                  Unmatch {" </3"}
+                </Text>
+              </Button>
+            </>
           ) : null}
         </ScrollView>
       </Root>
@@ -450,7 +497,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: "center",
-    width: 300,
+    width: 200,
     marginTop: 5,
     borderRadius: 40,
     marginBottom: 30,

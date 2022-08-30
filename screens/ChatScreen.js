@@ -139,16 +139,22 @@ const ChatScreen = ({ route }) => {
           justifyContent="center"
           position="relative"
         >
-          <Column alignItems={"center"}>
-            <Avatar
-              bg="green.500"
-              size="md"
-              source={{ uri: receiverProfile.images[0] }}
-            >
-              FF
-            </Avatar>
-            <Text fontWeight="bold">{receiverProfile.displayName}</Text>
-          </Column>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Profile", { uid: receiverProfile.id })
+            }
+          >
+            <Column alignItems={"center"}>
+              <Avatar
+                bg="green.500"
+                size="md"
+                source={{ uri: receiverProfile.images[0] }}
+              >
+                FF
+              </Avatar>
+              <Text fontWeight="bold">{receiverProfile.displayName}</Text>
+            </Column>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() =>
               navigation.navigate("Home", { initialTab: "Message" })
