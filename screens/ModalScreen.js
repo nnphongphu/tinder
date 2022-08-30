@@ -30,17 +30,19 @@ import {
 import { storage } from "../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
+import { Root, Popup } from "popup-ui";
 
 const ModalScreen = () => {
   const user = useAuth();
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [job, setJob] = useState(null);
+  const [job, setJob] = useState("");
   const [age, setAge] = useState(null);
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
   const [gender, setGender] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const mapper = [
     [0, 1, 2],
     [3, 4, 5],
@@ -60,16 +62,28 @@ const ModalScreen = () => {
         {
           images,
           bio,
-          job,
+          job: job || "",
           age,
           gender,
-          school,
+          school: school || "",
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         },
         { merge: true }
       )
       .then(() => {
-        navigation.navigate("Home");
+        Popup.show({
+          type: "Success",
+          title: "Update complete",
+          button: true,
+          textBody: "Congrats! Your profile is updated successfully!",
+          buttonText: "Ok",
+          callback: () => {
+            Popup.hide();
+            if (isFirstTimer)
+              navigation.navigate("Home", { initialTab: "Feed" });
+            else navigation.navigate("Home", { initialTab: "Account" });
+          },
+        });
       })
       .catch((error) => {
         alert(error);
@@ -97,6 +111,7 @@ const ModalScreen = () => {
         setGender(data?.gender);
         setJob(data?.job);
         if (data?.images) setImages(data?.images);
+        setDisplayName(data?.displayName);
         setSchool(data?.school);
       }
       setIsLoading(false);
@@ -179,276 +194,293 @@ const ModalScreen = () => {
     );
   } else {
     return (
-      <ScrollView
-        contentContainerStyle={styles.view}
-        backgroundColor={"#576cd6"}
-      >
-        <ImageBackground
-          source={require("../assets/bg4.png")}
-          style={styles.container}
-          resizeMode="contain"
-          imageStyle={{
-            bottom: images && images.length === 9 ? 1134 : 1364,
-          }}
+      <Root>
+        <ScrollView
+          contentContainerStyle={styles.view}
+          backgroundColor={"#576cd6"}
         >
-          {!isFirstTimer && (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Home", { initialTab: "Account" })
-              }
-              style={styles.floatButtonBack}
+          <ImageBackground
+            source={require("../assets/bg4.png")}
+            style={styles.container}
+            resizeMode="contain"
+            imageStyle={{
+              bottom: images && images.length === 9 ? 1134 : 1364,
+            }}
+          >
+            {!isFirstTimer && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Home", { initialTab: "Account" })
+                }
+                style={styles.floatButtonBack}
+              >
+                <AntDesign name="leftcircleo" size={50} color="white" />
+              </TouchableOpacity>
+            )}
+            <Text
+              fontSize="4xl"
+              color="white"
+              marginTop={300}
+              style={{ fontFamily: "Lobster_400Regular" }}
             >
-              <AntDesign name="leftcircleo" size={50} color="white" />
-            </TouchableOpacity>
-          )}
-          <Text
-            fontSize="4xl"
-            color="white"
-            marginTop={300}
-            style={{ fontFamily: "Lobster_400Regular" }}
-          >
-            Edit Profile
-          </Text>
-          <Text fontSize="lg" color="white" marginBottom={50}>
-            Show the world what you've got!
-          </Text>
-          <Text
-            color="white"
-            fontSize="md"
-            alignSelf="flex-start"
-            fontWeight="bold"
-            marginBottom={2}
-            style={{ marginHorizontal: 10 }}
-          >
-            PHOTOS *
-          </Text>
-          <Column space={3}>
-            {mapper.map((columns, index) => {
-              return (
-                <Row space={3} key={`columns${index}`}>
-                  {columns.map((id, index2) => {
-                    if ((images && id >= images.length) || !images) {
-                      return (
-                        <Center
-                          key={`item${index}${index2}`}
-                          height={40}
-                          width={120}
-                          bg="transparent"
-                          borderRadius={10}
-                          borderStyle="dashed"
-                          borderWidth={3}
-                          borderColor="white"
-                        />
-                      );
-                    } else if (images) {
-                      return (
-                        <ImageBackground
-                          key={`item${index}${index2}`}
-                          source={{ uri: images[id] }}
-                          resizeMode="cover"
-                          borderRadius={10}
-                        >
-                          <Center height={40} width={120} bg="transparent">
-                            <AntDesign
-                              name="closecircle"
-                              size={20}
-                              color="white"
-                              style={styles.floatButton}
-                              onPress={() =>
-                                setImages([
-                                  ...images.filter(
-                                    (image) => image !== images[id]
-                                  ),
-                                ])
-                              }
-                            />
-                          </Center>
-                        </ImageBackground>
-                      );
-                    }
-                  })}
-                </Row>
-              );
-            })}
-          </Column>
-          <Text
-            color="white"
-            fontSize={"sm"}
-            marginBottom={5}
-            marginTop={2}
-            alignSelf="flex-start"
-            style={{ marginHorizontal: 12 }}
-          >
-            We recommend using authentic photos for greatest experience.
-            Uploading all 9 photos to increase matching rate!
-          </Text>
-          {((images && images.length <= 9) || !images) && (
-            <>
-              <TouchableOpacity marginTop={30} onPress={_pickImage}>
-                <ImageBackground
-                  source={require("../assets/gallery.png")}
-                  resizeMode="cover"
-                >
-                  <Column width={310} height={100} paddingY={15} paddingX={15}>
-                    <Text color="white" fontSize="md" alignSelf="flex-start">
-                      Upload from
-                    </Text>
-                    <Text
-                      color="white"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      alignSelf="flex-start"
-                    >
-                      Gallery
-                    </Text>
-                  </Column>
-                </ImageBackground>
-              </TouchableOpacity>
-              <TouchableOpacity style={{ marginTop: 30 }} onPress={_takePhoto}>
-                <ImageBackground
-                  source={require("../assets/camera.png")}
-                  resizeMode="cover"
-                >
-                  <Column width={310} height={100} paddingY={15} paddingX={15}>
-                    <Text color="white" fontSize="md" alignSelf="flex-start">
-                      Capture from
-                    </Text>
-                    <Text
-                      color="white"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      alignSelf="flex-start"
-                    >
-                      Camera
-                    </Text>
-                  </Column>
-                </ImageBackground>
-              </TouchableOpacity>
-            </>
-          )}
-          <Column style={{ marginHorizontal: 10 }}>
+              {isFirstTimer ? `Welcome, ${displayName}!` : "Edit Profile"}
+            </Text>
+            <Text fontSize="lg" color="white" marginBottom={50}>
+              {isFirstTimer
+                ? `Please fill out the following form to continue!`
+                : "Show the world what you've got!"}
+            </Text>
             <Text
               color="white"
+              fontSize="md"
+              alignSelf="flex-start"
               fontWeight="bold"
               marginBottom={2}
-              marginTop={50}
-              alignSelf="flex-start"
+              style={{ marginHorizontal: 10 }}
             >
-              ABOUT ME *
+              PHOTOS *
             </Text>
-            <TextArea
-              value={bio}
-              onChangeText={(text) => setBio(text)}
-              placeholder="Tell us all about you"
-              style={styles.bio}
-              w="100%"
-              h={200}
-              fontSize={"md"}
-            />
+            <Column space={3}>
+              {mapper.map((columns, index) => {
+                return (
+                  <Row space={3} key={`columns${index}`}>
+                    {columns.map((id, index2) => {
+                      if ((images && id >= images.length) || !images) {
+                        return (
+                          <Center
+                            key={`item${index}${index2}`}
+                            height={40}
+                            width={120}
+                            bg="transparent"
+                            borderRadius={10}
+                            borderStyle="dashed"
+                            borderWidth={3}
+                            borderColor="white"
+                          />
+                        );
+                      } else if (images) {
+                        return (
+                          <ImageBackground
+                            key={`item${index}${index2}`}
+                            source={{ uri: images[id] }}
+                            resizeMode="cover"
+                            borderRadius={10}
+                          >
+                            <Center height={40} width={120} bg="transparent">
+                              <AntDesign
+                                name="closecircle"
+                                size={20}
+                                color="white"
+                                style={styles.floatButton}
+                                onPress={() =>
+                                  setImages([
+                                    ...images.filter(
+                                      (image) => image !== images[id]
+                                    ),
+                                  ])
+                                }
+                              />
+                            </Center>
+                          </ImageBackground>
+                        );
+                      }
+                    })}
+                  </Row>
+                );
+              })}
+            </Column>
             <Text
               color="white"
               fontSize={"sm"}
-              marginBottom={2}
+              marginBottom={5}
               marginTop={2}
               alignSelf="flex-start"
-              textAlign="justify"
+              style={{ marginHorizontal: 12 }}
             >
-              Do not include social media handles or any other contact
-              information in your profile. Safety first.
+              We recommend using authentic photos for greatest experience.
+              Uploading all 9 photos to increase matching rate!
             </Text>
+            {((images && images.length <= 9) || !images) && (
+              <>
+                <TouchableOpacity marginTop={30} onPress={_pickImage}>
+                  <ImageBackground
+                    source={require("../assets/gallery.png")}
+                    resizeMode="cover"
+                  >
+                    <Column
+                      width={310}
+                      height={100}
+                      paddingY={15}
+                      paddingX={15}
+                    >
+                      <Text color="white" fontSize="md" alignSelf="flex-start">
+                        Upload from
+                      </Text>
+                      <Text
+                        color="white"
+                        fontSize="3xl"
+                        fontWeight="bold"
+                        alignSelf="flex-start"
+                      >
+                        Gallery
+                      </Text>
+                    </Column>
+                  </ImageBackground>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ marginTop: 30 }}
+                  onPress={_takePhoto}
+                >
+                  <ImageBackground
+                    source={require("../assets/camera.png")}
+                    resizeMode="cover"
+                  >
+                    <Column
+                      width={310}
+                      height={100}
+                      paddingY={15}
+                      paddingX={15}
+                    >
+                      <Text color="white" fontSize="md" alignSelf="flex-start">
+                        Capture from
+                      </Text>
+                      <Text
+                        color="white"
+                        fontSize="3xl"
+                        fontWeight="bold"
+                        alignSelf="flex-start"
+                      >
+                        Camera
+                      </Text>
+                    </Column>
+                  </ImageBackground>
+                </TouchableOpacity>
+              </>
+            )}
+            <Column style={{ marginHorizontal: 10 }}>
+              <Text
+                color="white"
+                fontWeight="bold"
+                marginBottom={2}
+                marginTop={50}
+                alignSelf="flex-start"
+              >
+                ABOUT ME *
+              </Text>
+              <TextArea
+                value={bio}
+                onChangeText={(text) => setBio(text)}
+                placeholder="Tell us all about you"
+                style={styles.bio}
+                w="100%"
+                h={200}
+                fontSize={"md"}
+              />
+              <Text
+                color="white"
+                fontSize={"sm"}
+                marginBottom={2}
+                marginTop={2}
+                alignSelf="flex-start"
+                textAlign="justify"
+              >
+                Do not include social media handles or any other contact
+                information in your profile. Safety first.
+              </Text>
 
-            <Text
-              color="white"
-              fontWeight="bold"
-              marginBottom={2}
-              marginTop={5}
-              alignSelf="flex-start"
+              <Text
+                color="white"
+                fontWeight="bold"
+                marginBottom={2}
+                marginTop={5}
+                alignSelf="flex-start"
+              >
+                GENDER *
+              </Text>
+              <Select
+                minWidth="200"
+                accessibilityLabel="Choose gender"
+                placeholder="Choose gender"
+                _selectedItem={{
+                  bg: "teal.600",
+                  endIcon: <CheckIcon size={5} />,
+                }}
+                color="black"
+                fontSize={"md"}
+                backgroundColor="white"
+                selectedValue={gender}
+                onValueChange={(value) => setGender(value)}
+              >
+                <Select.Item label="Male" value="Male" />
+                <Select.Item label="Female" value="Female" />
+                <Select.Item label="Non binary" value="Non binary" />
+                <Select.Item label="Rather not share" value="Undefined" />
+              </Select>
+              <Text
+                color="white"
+                fontWeight="bold"
+                marginBottom={2}
+                marginTop={5}
+                alignSelf="flex-start"
+              >
+                AGE *
+              </Text>
+              <Input
+                w="100%"
+                value={age}
+                onChangeText={(text) => setAge(text)}
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Your age"
+                fontSize={"md"}
+              />
+              <Text
+                color="white"
+                fontWeight="bold"
+                marginBottom={2}
+                marginTop={5}
+                alignSelf="flex-start"
+              >
+                JOB TITLE
+              </Text>
+              <Input
+                w="100%"
+                value={job}
+                onChangeText={(text) => setJob(text)}
+                style={styles.input}
+                placeholder="Your job"
+                fontSize={"md"}
+              />
+              <Text
+                color="white"
+                fontWeight="bold"
+                marginBottom={2}
+                marginTop={5}
+                alignSelf="flex-start"
+              >
+                EDUCATION
+              </Text>
+              <Input
+                w="100%"
+                value={school}
+                onChangeText={(text) => setSchool(text)}
+                style={styles.input}
+                placeholder="Your high school/university"
+                fontSize={"md"}
+              />
+            </Column>
+            <Button
+              isDisabled={incompleteForm}
+              onPress={updateUserProfile}
+              style={styles.buttonInvert}
             >
-              GENDER *
-            </Text>
-            <Select
-              minWidth="200"
-              accessibilityLabel="Choose gender"
-              placeholder="Choose gender"
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size={5} />,
-              }}
-              color="black"
-              fontSize={"md"}
-              backgroundColor="white"
-              selectedValue={gender}
-              onValueChange={(value) => setGender(value)}
-            >
-              <Select.Item label="Male" value="Male" />
-              <Select.Item label="Female" value="Female" />
-              <Select.Item label="Non binary" value="Non binary" />
-              <Select.Item label="Rather not share" value="Undefined" />
-            </Select>
-            <Text
-              color="white"
-              fontWeight="bold"
-              marginBottom={2}
-              marginTop={5}
-              alignSelf="flex-start"
-            >
-              AGE *
-            </Text>
-            <Input
-              w="100%"
-              value={age}
-              onChangeText={(text) => setAge(text)}
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Your age"
-              fontSize={"md"}
-            />
-            <Text
-              color="white"
-              fontWeight="bold"
-              marginBottom={2}
-              marginTop={5}
-              alignSelf="flex-start"
-            >
-              JOB TITLE
-            </Text>
-            <Input
-              w="100%"
-              value={job}
-              onChangeText={(text) => setJob(text)}
-              style={styles.input}
-              placeholder="Your job"
-              fontSize={"md"}
-            />
-            <Text
-              color="white"
-              fontWeight="bold"
-              marginBottom={2}
-              marginTop={5}
-              alignSelf="flex-start"
-            >
-              EDUCATION
-            </Text>
-            <Input
-              w="100%"
-              value={school}
-              onChangeText={(text) => setSchool(text)}
-              style={styles.input}
-              placeholder="Your high school/university"
-              fontSize={"md"}
-            />
-          </Column>
-          <Button
-            isDisabled={incompleteForm}
-            onPress={updateUserProfile}
-            style={styles.buttonInvert}
-          >
-            <Text fontSize="md" color="white" fontWeight="bold">
-              Update
-            </Text>
-          </Button>
-        </ImageBackground>
-      </ScrollView>
+              <Text fontSize="md" color="white" fontWeight="bold">
+                {isFirstTimer ? "Start" : "Update"}
+              </Text>
+            </Button>
+          </ImageBackground>
+        </ScrollView>
+      </Root>
     );
   }
 };

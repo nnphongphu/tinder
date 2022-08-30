@@ -107,7 +107,7 @@ const MessageScreen = ({ navigation: navNavigation }) => {
               onPress={() => navNavigation.jumpTo("Liked")}
               style={{ marginTop: 3, marginRight: 3 }}
             >
-              <Center height={200} width={122} bg="#576cd6">
+              <Center height={200} width={122} bg="#576cd6" borderRadius={10}>
                 <Column
                   width="100%"
                   backgroundColor="#576cd6"
@@ -117,7 +117,7 @@ const MessageScreen = ({ navigation: navNavigation }) => {
                   style={{
                     position: "absolute",
                     bottom: 0,
-                    paddingHorizontal: 5,
+                    paddingHorizontal: 10,
                     paddingVertical: 10,
                   }}
                 >

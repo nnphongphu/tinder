@@ -156,7 +156,7 @@ const AccountScreen = () => {
                 </Column>
               </TouchableOpacity>
 
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
                 <AntDesign
                   name="setting"
                   size={40}
