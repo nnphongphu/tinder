@@ -16,18 +16,20 @@ import {
   Center,
   NativeBaseProvider,
   Flex,
-  Text, 
+  Text,
+  Spinner,
+  Column,
 } from "native-base";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
-import { Modal, FormControl } from 'native-base';
+import { Modal, FormControl } from "native-base";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigation = useNavigation();
-  const { signIn, loading,resetPassword} = useAuth();
+  const { signIn, loading, resetPassword } = useAuth();
   const [show, setShow] = useState(false);
 
   let [fontLoaded] = useFonts({
@@ -53,7 +55,16 @@ const LoginScreen = () => {
   };
 
   if (!fontLoaded) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <KeyboardAvoidingView style={styles.container}>
@@ -124,13 +135,16 @@ const LoginScreen = () => {
               placeholder="Password"
             />
           </Stack>
-          <Flex  direction="row-reverse" marginTop={2} >
+          <Flex direction="row-reverse" marginTop={2}>
             <Text
-            
               fontSize="sm"
               onPress={() => setModalVisible(true)}
-              style={ { alignItems: "flex-start",color: "white",
-              fontWeight: "bold",justifyContent: "flex-end",} }
+              style={{
+                alignItems: "flex-start",
+                color: "white",
+                fontWeight: "bold",
+                justifyContent: "flex-end",
+              }}
             >
               Forgot Password?
             </Text>
@@ -160,23 +174,35 @@ const LoginScreen = () => {
         Register
       </Button> */}
         </ImageBackground>
-        <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)} avoidKeyboard justifyContent="flex-end" bottom="300" size="lg">
+        <Modal
+          isOpen={modalVisible}
+          onClose={() => setModalVisible(false)}
+          avoidKeyboard
+          justifyContent="flex-end"
+          bottom="300"
+          size="lg"
+        >
           <Modal.Content>
             <Modal.CloseButton />
-            <Modal.Header style={ {color: "white"} }>Forgot Password?</Modal.Header>
+            <Modal.Header style={{ color: "white" }}>
+              Forgot Password?
+            </Modal.Header>
             <Modal.Body>
               Enter email address and we'll send a link to reset your password.
               <FormControl mt="3">
                 <FormControl.Label>Email</FormControl.Label>
-                <Input value={email}
-            onChangeText={(text) => setEmail(text)} />
+                <Input value={email} onChangeText={(text) => setEmail(text)} />
               </FormControl>
             </Modal.Body>
             <Modal.Footer>
-              <Button flex="1" onPress={() => {
-              resetPassword(email);
-              setModalVisible(false);
-            }}style={styles.button1}>
+              <Button
+                flex="1"
+                onPress={() => {
+                  resetPassword(email);
+                  setModalVisible(false);
+                }}
+                style={styles.button1}
+              >
                 Proceed
               </Button>
             </Modal.Footer>

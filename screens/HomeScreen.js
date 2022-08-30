@@ -1,5 +1,11 @@
 import { Avatar } from "@rneui/base";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -9,10 +15,11 @@ import {
   Image,
   KeyboardAvoidingView,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { db } from "../firebaseConfig";
-import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import useAuth from "../hooks/useAuth";
 import tw from "tailwind-react-native-classnames";
 import Swiper from "react-native-deck-swiper";
@@ -25,34 +32,20 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import ModalScreen from "./ModalScreen";
 import ProfileScreen from "./ProfileScreen";
 import AccountScreen from "./AccountScreen";
-import { Row, Text } from "native-base";
+import { Center, Column, Row, Spinner, Text } from "native-base";
+import HistoryScreen from "./HistoryScreen";
+import { useIsFocused } from "@react-navigation/native";
+import LikedScreen from "./LikedScreen";
 
 const Tab = createMaterialBottomTabNavigator();
 
-const HomeScreen = ({ route }) => {
-  function Profile() {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Modal")}
-        ></TouchableOpacity>
-      </View>
-    );
-  }
-
-  function Notifications() {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Notifications!</Text>
-      </View>
-    );
-  }
-  const [chats, setChats] = useState([]);
-  const [passes, setPasses] = useState([]);
+const HomeScreen = ({ route, navigation: navNavigation }) => {
+  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(true);
   const [passesList, setPassesList] = useState([]);
   const [matchList, setMatchList] = useState([]);
   const [swipesList, setSwipesList] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const navigation = useNavigation();
@@ -60,14 +53,16 @@ const HomeScreen = ({ route }) => {
   const swipeRef = useRef();
   const [profiles, setProfiles] = useState([]);
 
-  useEffect(() => {
-    setIsLoading(true);
+  const refresh = async () => {
     const getAllProfiles = async () => {
+      setIsLoading(true);
+
       const allUsersSnapshot = await db.collection("Users").get();
-      let allUsers = [];
+      let _allUsers = [];
       allUsersSnapshot.docs.forEach((doc) => {
-        allUsers.push({ ...doc.data(), id: doc.id });
+        _allUsers.push({ ...doc.data(), id: doc.id });
       });
+      setAllUsers(_allUsers);
 
       const l = await db
         .collection("Users")
@@ -78,7 +73,7 @@ const HomeScreen = ({ route }) => {
         let tl = [];
         l.docs.forEach((doc) => tl.push(doc.id));
         setPassesList(tl);
-      }
+      } else if (l && l.docs) setPassesList([]);
 
       const m = await db
         .collection("Users")
@@ -89,19 +84,19 @@ const HomeScreen = ({ route }) => {
         let tm = [];
         m.docs.forEach((doc) => tm.push(doc.id));
         setMatchList(tm);
-      }
+      } else if (m && m.docs) setMatchList([]);
 
       const r = await db
         .collection("Users")
         .doc(user.uid)
         .collection("swipes")
         .get();
+
       if (r && r.docs && r.docs.length) {
         let tr = [];
         r.docs.forEach((doc) => tr.push(doc.id));
         setSwipesList(tr);
-      }
-
+      } else if (r && r.docs) setSwipesList([]);
       const filterUsers = allUsers.filter(
         (u) =>
           !swipesList.includes(u.id) &&
@@ -116,7 +111,7 @@ const HomeScreen = ({ route }) => {
       setIsLoading(false);
     };
     getAllProfiles();
-  }, [user]);
+  };
 
   let [fontLoaded] = useFonts({
     Lobster_400Regular,
@@ -138,6 +133,7 @@ const HomeScreen = ({ route }) => {
         .collection("passes")
         .doc(uid)
         .set(profile);
+      setPassesList([...passesList, profiles[cardIndex].id]);
 
       await db
         .collection("Users")
@@ -171,6 +167,7 @@ const HomeScreen = ({ route }) => {
         .collection("Users")
         .doc(user.uid)
         .get();
+      setSwipesList([...swipesList, profiles[cardIndex].id]);
 
       const loggedInProfile = loggedInProfileSnapshot.data();
 
@@ -215,9 +212,34 @@ const HomeScreen = ({ route }) => {
     }
   };
 
-  const Feed = () => {
+  useEffect(() => {
+    const unsubscribe = navNavigation.addListener("focus", (e) => {
+      refresh();
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const Feed = ({ navigation: navNavigation }) => {
+    useEffect(() => {
+      const unsubscribe = navNavigation.addListener("tabPress", (e) => {
+        refresh();
+      });
+
+      return unsubscribe;
+    }, [navNavigation]);
+
     if (isLoading || !user) {
-      return null;
+      return (
+        <Column
+          width="100%"
+          height="100%"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Spinner size="lg" color="indigo.500" />
+        </Column>
+      );
     } else {
       return (
         <SafeAreaView style={[tw`flex-1`]}>
@@ -351,28 +373,22 @@ const HomeScreen = ({ route }) => {
               <AntDesign name="search1" size={50} color="#576cd6" />
             </TouchableOpacity>
           </Row>
-          {/* End of Cards */}
-          {/* <View style={tw`flex flex-row justify-evenly`}>
-        <TouchableOpacity
-          onPress={() => swipeRef.current.swipeLeft()}
-          style={tw`items-center justify-center rounded-full w-16 h-16 bg-red-200`}
-        >
-          <Entypo name="cross" size={24} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => swipeRef.current.swipeRight()}
-          style={tw`items-center justify-center rounded-full w-16 h-16 bg-green-200`}
-        >
-          <AntDesign name="heart" size={24} />
-        </TouchableOpacity>
-      </View> */}
         </SafeAreaView>
       );
     }
   };
 
   if (!fontLoaded) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <>
@@ -380,16 +396,29 @@ const HomeScreen = ({ route }) => {
           initialRouteName={
             route?.params?.initialTab ? route?.params?.initialTab : "Feed"
           }
-          activeColor="#576cd6"
+          activeColor="#ffffff"
           labeled={false}
-          barStyle={{ backgroundColor: "#f0f0f0" }}
+          barStyle={{ backgroundColor: "#576cd6" }}
         >
           <Tab.Screen
-            name="Notifications"
+            name="Message"
             component={ModalScreen}
             options={{
               tabBarIcon: ({ color }) => (
-                <MaterialCommunityIcons name="bell" color={color} size={26} />
+                <Entypo name="message" color={color} size={26} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Liked"
+            component={LikedScreen}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <MaterialCommunityIcons
+                  name="star-four-points"
+                  size={26}
+                  color={color}
+                />
               ),
             }}
           />
@@ -397,13 +426,19 @@ const HomeScreen = ({ route }) => {
             name="Feed"
             component={Feed}
             options={{
-              tabBarIcon: () => (
+              tabBarIcon: ({ color }) => (
                 <TouchableOpacity>
-                  <Image
-                    style={tw`h-8 w-8`}
-                    source={require("../assets/logo.png")}
-                  />
+                  <Entypo name="home" size={26} color={color} />
                 </TouchableOpacity>
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="History"
+            component={HistoryScreen}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <AntDesign name="clockcircle" size={23} color={color} />
               ),
             }}
           />

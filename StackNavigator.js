@@ -15,6 +15,7 @@ import StartScreen from "./screens/StartScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import AccountScreen from "./screens/AccountScreen";
+import HistoryScreen from "./screens/HistoryScreen";
 
 const Stack = createNativeStackNavigator();
 const globalScreenOptions = {
@@ -48,6 +49,7 @@ export default function StackNavigator() {
       ) : (
         <>
           <Stack.Group>
+            <Stack.Screen name="History" component={HistoryScreen} />
             <Stack.Screen name="Account" component={AccountScreen} />
             <Stack.Screen
               name="Profile"

@@ -13,7 +13,7 @@ import { TextInput } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import firebase from "firebase/compat/app";
 import { db } from "../firebaseConfig";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 import {
   Text,
@@ -27,6 +27,7 @@ import {
   Row,
   Center,
   Avatar,
+  Spinner,
 } from "native-base";
 import { storage } from "../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -77,7 +78,16 @@ const AccountScreen = () => {
   }, [user]);
 
   if (!fontLoaded || isLoading) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <KeyboardAvoidingView style={styles.bg} backgroundColor={"#ffffff"}>
@@ -102,26 +112,48 @@ const AccountScreen = () => {
                       }
                     : undefined
                 }
-                size="2xl"
+                // size="2xl"
+                style={[
+                  styles.shadow,
+                  {
+                    width: 200,
+                    height: 200,
+                    borderColor: "#3a5093",
+                    borderStyle: "solid",
+                    borderWidth: 8,
+                    padding: 8,
+                  },
+                ]}
               >
                 UR
-                <Avatar.Badge bg="green.500" />
+                <Avatar.Badge
+                  bg="green.500"
+                  style={{ width: 40, height: 40 }}
+                />
               </Avatar>
             </TouchableOpacity>
             <Text fontSize="4xl" color="black" marginTop={30} fontWeight="bold">
-              {`${displayName}, ${age}`}
+              {`${displayName}, ${age} `}
+              <MaterialIcons name="verified" size={25} color="#00aced" />
             </Text>
-            <Text fontSize="lg" color="black" marginBottom={50}>
-              Show the world what you've got!
-            </Text>
-            <Row space={10} paddingBottom={30}>
+            <Row space={10} marginTop={5} paddingBottom={30}>
               <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-                <AntDesign
-                  name="edit"
-                  size={40}
-                  color="#3a5093"
-                  style={styles.circleButton}
-                />
+                <Column alignItems={"center"}>
+                  <AntDesign
+                    name="edit"
+                    size={40}
+                    color="#3a5093"
+                    style={styles.circleButton}
+                  />
+                  <Text
+                    marginTop={2}
+                    fontWeight={"bold"}
+                    fontSize="md"
+                    color={"#808080"}
+                  >
+                    EDIT
+                  </Text>
+                </Column>
               </TouchableOpacity>
 
               <TouchableOpacity>
@@ -134,17 +166,55 @@ const AccountScreen = () => {
                     { transform: [{ translateY: 30 }] },
                   ]}
                 />
+                <Text
+                  marginTop={10}
+                  fontWeight={"bold"}
+                  fontSize="md"
+                  color={"#808080"}
+                >
+                  SETTINGS
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={logOut}>
-                <AntDesign
-                  name="logout"
-                  size={40}
-                  color="#f05093"
-                  style={styles.circleButton}
-                />
+              <TouchableOpacity
+                onPress={logOut}
+                style={{ display: "flex", flexDirection: "column" }}
+                alignItems="center"
+              >
+                <Column alignItems={"center"}>
+                  <AntDesign
+                    name="logout"
+                    size={40}
+                    color="#f05093"
+                    style={styles.circleButton}
+                  />
+                  <Text
+                    marginTop={2}
+                    fontWeight={"bold"}
+                    fontSize="md"
+                    color={"#808080"}
+                  >
+                    SIGN OUT
+                  </Text>
+                </Column>
               </TouchableOpacity>
             </Row>
+            <Text
+              fontSize="md"
+              color="#808080"
+              marginTop={25}
+              textAlign="center"
+            >
+              Thank you
+            </Text>
+            <Text
+              fontSize="xs"
+              color="#808080"
+              textAlign="center"
+              marginBottom={35}
+            >
+              Made by The Platonic Team © 2022
+            </Text>
           </Column>
         </ImageBackground>
       </KeyboardAvoidingView>
@@ -197,10 +267,19 @@ const styles = StyleSheet.create({
     left: 15,
   },
   circleButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#ffffff",
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderRadius: 60,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
   bg: {
     flex: 1,
@@ -209,5 +288,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     width: "100%",
     position: "relative",
+  },
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
 });

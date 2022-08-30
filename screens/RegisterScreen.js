@@ -18,6 +18,8 @@ import {
   NativeBaseProvider,
   Flex,
   Text,
+  Column,
+  Spinner,
 } from "native-base";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
@@ -57,7 +59,16 @@ const RegisterScreen = () => {
   }, []);
 
   if (!fontLoaded) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <KeyboardAvoidingView style={styles.container}>

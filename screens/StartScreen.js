@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import { useLayoutEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { Button, Text } from "native-base";
+import { Button, Column, Spinner, Text } from "native-base";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
 
 const StartScreen = () => {
@@ -22,7 +22,16 @@ const StartScreen = () => {
   }, []);
 
   if (!fontLoaded) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <KeyboardAvoidingView style={styles.container}>

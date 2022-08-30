@@ -25,6 +25,7 @@ import {
   CheckIcon,
   Row,
   Center,
+  Spinner,
 } from "native-base";
 import { storage } from "../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -103,7 +104,7 @@ const ModalScreen = () => {
     getData();
   }, [user]);
 
-  _takePhoto = async () => {
+  const _takePhoto = async () => {
     let pickerResult = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [3, 4],
@@ -112,7 +113,7 @@ const ModalScreen = () => {
     _handleImagePicked(pickerResult);
   };
 
-  _pickImage = async () => {
+  const _pickImage = async () => {
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [3, 4],
@@ -121,7 +122,7 @@ const ModalScreen = () => {
     _handleImagePicked(pickerResult);
   };
 
-  _handleImagePicked = async (pickerResult) => {
+  const _handleImagePicked = async (pickerResult) => {
     try {
       setUploading(true);
 
@@ -166,7 +167,16 @@ const ModalScreen = () => {
   }
 
   if (!fontLoaded || isLoading) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
       <ScrollView

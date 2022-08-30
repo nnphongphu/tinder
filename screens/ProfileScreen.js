@@ -11,7 +11,17 @@ import { useNavigation } from "@react-navigation/native";
 import { db } from "../firebaseConfig";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { useFonts, Lobster_400Regular } from "@expo-google-fonts/lobster";
-import { Text, Column, Button, Row, Image } from "native-base";
+import {
+  Text,
+  Column,
+  Button,
+  Row,
+  Image,
+  Spinner,
+  Avatar,
+  Center,
+} from "native-base";
+import { Root, Popup } from "popup-ui";
 
 const ProfileScreen = ({ route }) => {
   const user = useAuth();
@@ -120,6 +130,7 @@ const ProfileScreen = ({ route }) => {
         .collection("match")
         .doc(user.user.uid)
         .delete();
+      navigation.navigate("Home");
     } catch (error) {
       alert(error);
     }
@@ -169,6 +180,53 @@ const ProfileScreen = ({ route }) => {
           .collection("match")
           .doc(user.user.uid)
           .set(loggedInProfile);
+
+        Popup.show({
+          type: "Success",
+          title: "Matched!",
+          button: true,
+          icon:
+            loggedInProfile && images
+              ? () => {
+                  return (
+                    <>
+                      <Center>
+                        <Avatar.Group
+                          _avatar={{
+                            size: "lg",
+                          }}
+                          max={2}
+                        >
+                          <Avatar
+                            bg="green.500"
+                            source={{
+                              uri: loggedInProfile.images[0],
+                            }}
+                          >
+                            I
+                          </Avatar>
+                          <Avatar
+                            bg="cyan.500"
+                            source={{
+                              uri: images[0],
+                            }}
+                          >
+                            U
+                          </Avatar>
+                        </Avatar.Group>
+                      </Center>
+                    </>
+                  );
+                }
+              : false,
+          textBody:
+            "You twos found each other! Take the lead by texting first!",
+          buttonText: "Ok",
+          callback: () => {
+            Popup.hide();
+            navigation.navigate("Home");
+          },
+        });
       }
     } catch (error) {
       alert(error);
@@ -176,90 +234,62 @@ const ProfileScreen = ({ route }) => {
   };
 
   if (!fontLoaded || isLoading) {
-    return null;
+    return (
+      <Column
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="lg" color="indigo.500" />
+      </Column>
+    );
   } else {
     return (
-      <ScrollView contentContainerStyle={styles.view} backgroundColor={"white"}>
-        <TouchableOpacity
-          style={styles.floatButtonBack}
-          onPress={() => navigation.navigate("Home", { initialTab: "Account" })}
+      <Root>
+        <ScrollView
+          contentContainerStyle={styles.view}
+          backgroundColor={"white"}
         >
-          <AntDesign name="leftcircleo" size={50} color="#576cd6" />
-        </TouchableOpacity>
-        <Column>
-          <ImageBackground
-            source={{ uri: images ? images[0] : "" }}
-            resizeMode="cover"
-            borderRadius={15}
+          <TouchableOpacity
+            style={styles.floatButtonBack}
+            onPress={() =>
+              navigation.navigate("Home", { initialTab: "Account" })
+            }
           >
-            <Column w="full" h="xl">
-              <Text
-                fontSize={"4xl"}
-                color="white"
-                fontWeight={"bold"}
-                marginTop={"auto"}
-                marginLeft={30}
-                style={styles.shadow}
-              >
-                {`${displayName}, ${age}`}
-              </Text>
-              {school && (
+            <AntDesign name="leftcircleo" size={50} color="#576cd6" />
+          </TouchableOpacity>
+          <Column>
+            <ImageBackground
+              source={{ uri: images ? images[0] : "" }}
+              resizeMode="cover"
+              borderRadius={15}
+            >
+              <Column w="full" h="xl">
                 <Text
-                  fontSize={"md"}
+                  fontSize={"4xl"}
                   color="white"
                   fontWeight={"bold"}
+                  marginTop={"auto"}
                   marginLeft={30}
-                  marginBottom={30}
+                  style={styles.shadow}
                 >
-                  {school}
+                  {`${displayName}, ${age}`}
                 </Text>
-              )}
-            </Column>
-          </ImageBackground>
-        </Column>
-        <Text
-          color="#576cd6"
-          fontSize="lg"
-          fontWeight="bold"
-          alignSelf="flex-start"
-          marginTop={5}
-          style={{ marginHorizontal: 10 }}
-        >
-          ABOUT ME
-        </Text>
-        <Text
-          color="black"
-          fontSize="lg"
-          alignSelf="flex-start"
-          style={{ marginHorizontal: 10 }}
-          marginBottom={5}
-        >
-          {bio}
-        </Text>
-        {images &&
-          images.length > 1 &&
-          images.map((image, index) => {
-            if (index >= 1)
-              return (
-                <Column key={`${image}-${index}`}>
-                  <ImageBackground
-                    source={{ uri: image }}
-                    resizeMode="cover"
-                    borderRadius={15}
-                    marginTop={5}
-                    marginBottom={5}
+                {school && (
+                  <Text
+                    fontSize={"md"}
+                    color="white"
+                    fontWeight={"bold"}
+                    marginLeft={30}
+                    marginBottom={30}
                   >
-                    <Column w="full" h="xl" />
-                  </ImageBackground>
-                </Column>
-              );
-          })}
-        <Column
-          bgColor={"#f0f0f0"}
-          borderRadius={8}
-          marginTop={5}
-          marginBottom={5}
-        >
+                    {school}
+                  </Text>
+                )}
+              </Column>
+            </ImageBackground>
+          </Column>
           <Text
             color="#576cd6"
             fontSize="lg"
@@ -268,69 +298,104 @@ const ProfileScreen = ({ route }) => {
             marginTop={5}
             style={{ marginHorizontal: 10 }}
           >
-            JOB TITLE
+            ABOUT ME
           </Text>
           <Text
             color="black"
             fontSize="lg"
             alignSelf="flex-start"
-            marginBottom={5}
             style={{ marginHorizontal: 10 }}
+            marginBottom={5}
           >
-            {job || "Not declared yet"}
+            {bio}
           </Text>
-        </Column>
-        {uid === user.user.uid && (
-          <Button
-            onPress={() => navigation.navigate("Modal")}
-            style={styles.button}
-          >
-            <Text fontSize="md" color="white" fontWeight={"bold"}>
-              Edit Profile
-            </Text>
-          </Button>
-        )}
-        {uid !== user.user.uid && matchList && !matchList.includes(uid) ? (
-          <Row
-            alignSelf={"center"}
-            justifyContent="center"
-            marginBottom={30}
-            paddingY={5}
-            space={30}
-            width={"100%"}
+          {images &&
+            images.length > 1 &&
+            images.map((image, index) => {
+              if (index >= 1)
+                return (
+                  <Column key={`${image}-${index}`}>
+                    <ImageBackground
+                      source={{ uri: image }}
+                      resizeMode="cover"
+                      borderRadius={15}
+                      marginTop={5}
+                      marginBottom={5}
+                    >
+                      <Column w="full" h="xl" />
+                    </ImageBackground>
+                  </Column>
+                );
+            })}
+          <Column
             bgColor={"#f0f0f0"}
+            borderRadius={8}
+            marginTop={5}
+            marginBottom={5}
           >
-            <AntDesign
-              name="minuscircle"
-              size={50}
+            <Text
               color="#576cd6"
-              onPress={swipeLeft}
-            />
-            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-              <Image
-                style={tw`h-14 w-14`}
-                source={require("../assets/logo.png")}
-              />
-            </TouchableOpacity>
-            <AntDesign
-              name="pluscircle"
-              size={50}
-              color="#576cd6"
-              onPress={swipeRight}
-            />
-          </Row>
-        ) : null}
-        {uid !== user.user.uid && matchList && matchList.includes(uid) ? (
-          <Button
-            onPress={() => console.log("KHUNG CHAT HAI NGƯỜI")}
-            style={styles.button}
-          >
-            <Text fontSize="md" color="white" fontWeight={"bold"}>
-              Message
+              fontSize="lg"
+              fontWeight="bold"
+              alignSelf="flex-start"
+              marginTop={5}
+              style={{ marginHorizontal: 10 }}
+            >
+              JOB TITLE
             </Text>
-          </Button>
-        ) : null}
-      </ScrollView>
+            <Text
+              color="black"
+              fontSize="lg"
+              alignSelf="flex-start"
+              marginBottom={5}
+              style={{ marginHorizontal: 10 }}
+            >
+              {job || "Not declared yet"}
+            </Text>
+          </Column>
+          {uid === user.user.uid && (
+            <Button
+              onPress={() => navigation.navigate("Modal")}
+              style={styles.button}
+            >
+              <Text fontSize="md" color="white" fontWeight={"bold"}>
+                Edit Profile
+              </Text>
+            </Button>
+          )}
+          {uid !== user.user.uid && matchList && !matchList.includes(uid) ? (
+            <Row
+              alignSelf={"center"}
+              justifyContent="center"
+              marginBottom={30}
+              paddingY={5}
+              space={30}
+              width={"100%"}
+              bgColor={"#f0f0f0"}
+            >
+              <TouchableOpacity onPress={swipeLeft}>
+                <AntDesign name="minuscircle" size={50} color="#576cd6" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                <Entypo name="home" size={50} color={"#576cd6"} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={swipeRight}>
+                <AntDesign name="pluscircle" size={50} color="#576cd6" />
+              </TouchableOpacity>
+            </Row>
+          ) : null}
+          {uid !== user.user.uid && matchList && matchList.includes(uid) ? (
+            <Button
+              onPress={() => console.log("KHUNG CHAT HAI NGƯỜI")}
+              style={styles.button}
+            >
+              <Text fontSize="md" color="white" fontWeight={"bold"}>
+                Message
+              </Text>
+            </Button>
+          ) : null}
+        </ScrollView>
+      </Root>
     );
   }
 };
