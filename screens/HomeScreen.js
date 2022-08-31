@@ -239,19 +239,19 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
           .collection("Users")
           .doc(uid)
           .collection("swipes")
-          .doc(user.user.uid)
+          .doc(user.uid)
           .delete();
 
         await db
           .collection("Users")
-          .doc(user.user.uid)
+          .doc(user.uid)
           .collection("swipes")
           .doc(uid)
           .delete();
 
         await db
           .collection("Users")
-          .doc(user.user.uid)
+          .doc(user.uid)
           .collection("passes")
           .doc(uid)
           .delete();
