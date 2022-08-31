@@ -56,6 +56,19 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
     const getAllProfiles = async () => {
       setIsLoading(true);
 
+      const getUserInfo = async () => {
+        const infoSnapshot = await db.collection("Users").doc(user.uid).get();
+        const info = infoSnapshot.data();
+        if (!info?.bio) {
+          navigation.navigate("Modal");
+          return true;
+        }
+        return false;
+      };
+      if (user.uid) {
+        if (getUserInfo()) return;
+      }
+
       const allUsersSnapshot = await db.collection("Users").get();
       let _allUsers = [];
       allUsersSnapshot.docs.forEach((doc) => {
@@ -132,15 +145,6 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
       headerShown: false,
     });
   }, []);
-
-  useEffect(() => {
-    const getUserInfo = async () => {
-      const infoSnapshot = await db.collection("Users").doc(user.uid).get();
-      const info = infoSnapshot.data();
-      if (!info?.bio) navigation.navigate("Modal");
-    };
-    if (user.uid) getUserInfo();
-  }, [user]);
 
   useEffect(() => {
     refresh();
