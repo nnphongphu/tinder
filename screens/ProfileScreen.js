@@ -181,6 +181,27 @@ const ProfileScreen = ({ route }) => {
           .doc(user.user.uid)
           .set(loggedInProfile);
 
+        await db
+          .collection("Users")
+          .doc(uid)
+          .collection("swipes")
+          .doc(user.user.uid)
+          .delete();
+
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("swipes")
+          .doc(uid)
+          .delete();
+
+        await db
+          .collection("Users")
+          .doc(user.user.uid)
+          .collection("passes")
+          .doc(uid)
+          .delete();
+
         Popup.show({
           type: "Success",
           title: "Matched!",
