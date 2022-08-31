@@ -65,8 +65,11 @@ const HomeScreen = ({ route, navigation: navNavigation }) => {
         }
         return false;
       };
+
       if (user.uid) {
-        if (getUserInfo()) return;
+        if (await getUserInfo()) {
+          return;
+        }
       }
 
       const allUsersSnapshot = await db.collection("Users").get();

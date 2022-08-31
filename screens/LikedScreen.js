@@ -192,7 +192,9 @@ const LikedScreen = ({ route, navigation: navNavigation }) => {
                                   color="#576cd6"
                                   fontSize="xs"
                                 >{`${
-                                  profiles[id].school || profiles[id].job
+                                  profiles[id].job ||
+                                  profiles[id].school ||
+                                  profiles[id].gender
                                 }`}</Text>
                               </Column>
                             </Center>
